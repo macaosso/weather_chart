@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Charts & Δp(972) North Surge Analysis</title>
+    <title>Weather Charts, Wind Forecast & Δp(972) Analysis</title>
+    <!-- Leaflet CSS for Satellite/Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +24,7 @@
         }
         .tabs {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 20px;
             max-width: 850px;
             width: 100%;
@@ -33,10 +35,10 @@
             background-color: #e2e8f0;
             color: #333;
             border: none;
-            padding: 10px 15px;
+            padding: 10px 14px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: background 0.2s;
@@ -84,7 +86,7 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        button {
+        button.ctrl-btn {
             background-color: #007bff;
             color: white;
             border: none;
@@ -99,7 +101,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             transition: background 0.2s;
         }
-        button:hover {
+        button.ctrl-btn:hover {
             background-color: #0056b3;
         }
         .timeline {
@@ -200,6 +202,7 @@
         <button class="tab-btn active" onclick="switchTab('synoptic')">Synoptic Pressure Chart</button>
         <button class="tab-btn" onclick="switchTab('wind')">ECMWF Wind Forecast</button>
         <button class="tab-btn" onclick="switchTab('deltap')">Δp(972) 北風潮分析</button>
+        <button class="tab-btn" onclick="switchTab('satellite')">衛星雲圖 (Satellite)</button>
     </div>
 
     <div class="container">
@@ -214,9 +217,9 @@
             </div>
 
             <div class="controls">
-                <button id="prevBtn" title="Previous">&#9664;</button>
-                <button id="playBtn" title="Play/Pause">&#9658;</button>
-                <button id="nextBtn" title="Next">&#9654;</button>
+                <button class="ctrl-btn" id="prevBtn" title="Previous">&#9664;</button>
+                <button class="ctrl-btn" id="playBtn" title="Play/Pause">&#9658;</button>
+                <button class="ctrl-btn" id="nextBtn" title="Next">&#9654;</button>
             </div>
 
             <div class="timeline" id="timelineContainer"></div>
@@ -232,9 +235,9 @@
             </div>
 
             <div class="controls">
-                <button id="windPrevBtn" title="Previous">&#9664;</button>
-                <button id="windPlayBtn" title="Play/Pause">&#9658;</button>
-                <button id="windNextBtn" title="Next">&#9654;</button>
+                <button class="ctrl-btn" id="windPrevBtn" title="Previous">&#9664;</button>
+                <button class="ctrl-btn" id="windPlayBtn" title="Play/Pause">&#9658;</button>
+                <button class="ctrl-btn" id="windNextBtn" title="Next">&#9654;</button>
             </div>
 
             <div class="timeline" id="windTimelineContainer"></div>
@@ -288,8 +291,17 @@
             </div>
         </div>
 
+        <!-- Tab 4: Satellite Map -->
+        <div id="tab-satellite" class="tab-content">
+            <h1>即時互動氣象地圖</h1>
+            <div class="status">華南及南海區域監測</div>
+            <div id="map" style="width: 100%; height: 500px; border-radius: 6px; border: 1px solid #ddd;"></div>
+        </div>
+
     </div>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // --- Synoptic Frames Logic ---
         const synopticFrames = [
@@ -447,6 +459,20 @@
             }
         };
 
+        // --- Satellite Leaflet Map Logic ---
+        let mapInitialized = false;
+        let satMap = null;
+
+        function initSatelliteMap() {
+            if (mapInitialized) return;
+            satMap = L.map('map').setView([20.0, 117.5], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 10,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(satMap);
+            mapInitialized = true;
+        }
+
         // --- Tabs Logic ---
         function switchTab(tabName) {
             stopSynopticPlay();
@@ -465,13 +491,17 @@
                 document.querySelector('button[onclick*="deltap"]').classList.add('active');
                 document.getElementById('tab-deltap').classList.add('active');
                 fetchDeltaP972();
+            } else if (tabName === 'satellite') {
+                document.querySelector('button[onclick*="satellite"]').classList.add('active');
+                document.getElementById('tab-satellite').classList.add('active');
+                initSatelliteMap();
+                setTimeout(() => { satMap.invalidateSize(); }, 200);
             }
         }
 
         // --- Delta P 972 Calculation using Open-Meteo ---
         async function fetchDeltaP972() {
             try {
-                // Chenzhou (25.8°N, 113.0°E) & Hong Kong (22.3°N, 114.17°E)
                 const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.8,22.3&longitude=113.0,114.17&hourly=pressure_msl&past_days=1&forecast_days=1');
                 const data = await response.json();
                 
@@ -495,14 +525,12 @@
                 const currentHK = hkPressures[currentIndex];
                 const deltaP = currentCZ - currentHK;
                 
-                // Past 6 hours rise
                 const past6Index = Math.max(0, currentIndex - 6);
                 const past6CZ = czPressures[past6Index];
                 const past6HK = hkPressures[past6Index];
                 const deltaP_past6 = past6CZ - past6HK;
                 const rise6h = deltaP - deltaP_past6;
                 
-                // Estimate arrival time based on reference table: 6h->18h, 7h->15h, 8h->12h, 9h->9h
                 let arrivalHours = 36 - (3 * deltaP);
                 if (deltaP < 4) {
                     arrivalHours = "超過 24 小時 / 尚未明顯";
@@ -512,7 +540,6 @@
                     arrivalHours = Math.round(arrivalHours) + " 小時";
                 }
                 
-                // Warnings evaluation based on rules
                 let warnings = [];
                 if (Math.abs(deltaP - 7) < 0.5) {
                     warnings.push("⚠️ 提示：Δp(972) 數值停留在 7 百帕左右，北風潮到達時間或會延遲。");
