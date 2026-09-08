@@ -36,7 +36,7 @@ interp_lon, interp_lat = np.meshgrid(
     np.linspace(105, 130, 200), np.linspace(10, 30, 200)
 )
 
-# Custom wind speed thresholds and corresponding gradual colors
+# Custom wind speed thresholds and corresponding gradual colors (7 colors for 7 levels)
 levels = [0, 20, 40, 60, 90, 120, 300]
 colors = [
     'white',  # 0 km/h
@@ -44,7 +44,8 @@ colors = [
     '#87ceeb',  # Light Blue (40 km/h)
     '#ffdab9',  # Light Orange (60 km/h)
     '#f08080',  # Light Red (90 km/h)
-    '#dda0dd',  # Light Purple (120+ km/h)
+    '#dda0dd',  # Light Purple (120 km/h)
+    '#8b008b',  # Dark Purple (300 km/h - Max end point)
 ]
 
 # Create a continuous gradual colormap matching the specified thresholds
