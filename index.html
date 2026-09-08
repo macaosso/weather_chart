@@ -266,6 +266,7 @@
             <button class="tab-btn" onclick="switchTab('wind')">ECMWF 風場</button>
             <button class="tab-btn" onclick="switchTab('temp')">2m 氣溫</button>
             <button class="tab-btn" onclick="switchTab('deltap')">Δp(972) 北風潮</button>
+            <button class="tab-btn" onclick="switchTab('rainwind')">风雨预报</button>
         </div>
 
         <!-- Content Body -->
@@ -362,6 +363,27 @@
                 </div>
             </div>
 
+            <!-- View 5: Rain & Wind Forecast (0H - 360H) -->
+            <div id="sec-rainwind" class="view-section">
+                <div class="map-viewport">
+                    <img id="rainWindImg" src="" alt="Rain & Wind Forecast">
+                </div>
+                <div class="timeline-card">
+                    <div class="slider-row">
+                        <input type="range" id="rainWindSlider" min="0" max="360" step="6" value="0">
+                    </div>
+                    <div class="controls-row">
+                        <button class="action-btn primary" id="rainWindPlayBtn">▶ 播放</button>
+                        <span id="rainWindLabel" style="font-weight:600;">+000H</span>
+                        <button class="action-btn" onclick="adjustRainWindSpeed()">加速</button>
+                    </div>
+                </div>
+                <div class="forecast-grid-container">
+                    <div class="forecast-label">選擇預報時次 (0H - 360H)</div>
+                    <div class="forecast-grid" id="rainWindGrid" style="max-height: 130px;"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -393,6 +415,12 @@
                 document.getElementById('sec-deltap').classList.add('active');
                 document.getElementById('appHeaderTitle').innerText = 'Δp(972) 北風潮分析';
                 fetchDeltaP();
+            } else if (tabName === 'rainwind') {
+                document.querySelector('[onclick*="rainwind"]').classList.add('active');
+                document.getElementById('sec-rainwind').classList.add('active');
+                document.getElementById('appHeaderTitle').innerText = '风·雨预报 (0H - 360H)';
+                buildGrid('rainWindGrid', 360, rainWindIdx, (s) => { rainWindIdx = s; updateRainWind(); });
+                updateRainWind();
             }
         }
 
@@ -480,6 +508,31 @@
             updateTemp();
         }
 
+        // --- Rain & Wind Logic (0H - 360H) ---
+        let rainWindIdx = 0, rainWindPlay = false, rainWindTimer = null;
+        const rainWindImg = document.getElementById('rainWindImg');
+        const rainWindSlider = document.getElementById('rainWindSlider');
+        const rainWindLbl = document.getElementById('rainWindLabel');
+
+        function updateRainWind() {
+            rainWindImg.src = `rain_wind_maps/rain_wind_${rainWindIdx}.png`;
+            rainWindSlider.value = rainWindIdx;
+            rainWindLbl.innerText = `+${String(rainWindIdx).padStart(3,'0')}H`;
+            updateGridActive('rainWindGrid', rainWindIdx);
+        }
+        rainWindSlider.oninput = (e) => { rainWindIdx = parseInt(e.target.value); updateRainWind(); };
+        document.getElementById('rainWindPlayBtn').onclick = () => {
+            rainWindPlay = !rainWindPlay;
+            document.getElementById('rainWindPlayBtn').innerText = rainWindPlay ? '❚❚ 暫停' : '▶ 播放';
+            if (rainWindPlay) {
+                rainWindTimer = setInterval(() => { rainWindIdx = (rainWindIdx + 6) > 360 ? 0 : rainWindIdx + 6; updateRainWind(); }, 1000);
+            } else { clearInterval(rainWindTimer); }
+        };
+        function adjustRainWindSpeed() {
+            rainWindIdx = (rainWindIdx + 6) > 360 ? 0 : rainWindIdx + 6;
+            updateRainWind();
+        }
+
         // --- Grid Builder ---
         function buildGrid(containerId, max, current, callback) {
             const grid = document.getElementById(containerId);
@@ -517,7 +570,7 @@
                 document.getElementById('dpVal').innerText = dp.toFixed(1) + " hPa";
                 document.getElementById('dpArrival').innerText = arrival;
                 document.getElementById('dpRise').innerText = (rise > 0 ? "+" : "") + rise.toFixed(1) + " hPa";
-                document.getElementById('dpStations',).innerText = `${Math.round(cz.pressure_msl[idx])} / ${Math.round(hk.pressure_msl[idx])}`;
+                document.getElementById('dpStations').innerText = `${Math.round(cz.pressure_msl[idx])} / ${Math.round(hk.pressure_msl[idx])}`;
                 
                 const alertBox = document.getElementById('deltapAlert');
                 if (dp >= 10 || rise > 2) {
