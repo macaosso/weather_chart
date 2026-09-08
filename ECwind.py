@@ -13,7 +13,7 @@ matplotlib.use('Agg')
 os.makedirs('ECwind', exist_ok=True)
 
 # 1. Setup grid matching extent: (105, 130, 10, 30)
-lons_grid = np.arange(105, 131, 2.0)
+lons_grid = np.arange(105, 130, 2.0)
 lats_grid = np.arange(10, 31, 2.0)
 lon_mesh, lat_mesh = np.meshgrid(lons_grid, lats_grid)
 flat_lons = lon_mesh.flatten()
@@ -22,8 +22,8 @@ flat_lats = lat_mesh.flatten()
 lat_str = ','.join(map(str, flat_lats))
 lon_str = ','.join(map(str, flat_lons))
 
-# 2. Fetch ECMWF wind speed forecast (10m) from Open-Meteo
-url_grid = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=wind_speed_10m&models=ecmwf_ifs025&forecast_days=7'
+# 2. Fetch ECMWF wind speed and direction forecast (10m) from Open-Meteo
+url_grid = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=wind_speed_10m,wind_direction_10m&models=ecmwf_ifs025&forecast_days=7'
 
 res_grid = requests.get(url_grid).json()
 if isinstance(res_grid, dict):
@@ -31,24 +31,40 @@ if isinstance(res_grid, dict):
     raise RuntimeError(f"Open-Meteo API Error: {res_grid.get('reason')}")
   res_grid = [res_grid]
 
-# 3. Setup interpolation mesh and finer colormap for wind speed ranges
+# 3. Setup interpolation mesh and smooth colormap for wind speed ranges
 interp_lon, interp_lat = np.meshgrid(
     np.linspace(105, 130, 200), np.linspace(10, 30, 200)
 )
 
-# Finer wind speed bins (every 15 km/h up to 300 km/h)
 levels = np.arange(0, 305, 15)
-cmap = plt.get_cmap('turbo')  # Smooth, high-contrast colormap
+cmap = plt.get_cmap('turbo')
 norm = matplotlib.colors.BoundaryNorm(levels, cmap.N, extend='max')
 
 # 4. Loop from 0H to 144H every 6H
 for step in range(0, 145, 6):
-  wind_speeds = [
-      loc.get('hourly', {}).get('wind_speed_10m', [0])[step] or 0.0
-      for loc in res_grid
-  ]
-  wind_speeds = np.array(wind_speeds)
+  wind_speeds = np.array(
+      [
+          loc.get('hourly', {}).get('wind_speed_10m', [0])[step] or 0.0
+          for loc in res_grid
+      ]
+  )
+  wind_dirs = np.array(
+      [
+          loc.get('hourly', {}).get('wind_direction_10m', [0])[step] or 0.0
+          for loc in res_grid
+      ]
+  )
 
+  # Convert wind speed and meteorological direction to U and V components
+  rad = np.radians(wind_dirs)
+  u_wind = -wind_speeds * np.sin(rad)
+  v_wind = -wind_speeds * np.cos(rad)
+
+  # Reshape U and V to match grid dimensions for barbs
+  u_2d = u_wind.reshape(lon_mesh.shape)
+  v_2d = v_wind.reshape(lon_mesh.shape)
+
+  # Interpolate wind speed for contour fill background
   grid_wind_2d = griddata(
       (flat_lons, flat_lats),
       wind_speeds,
@@ -81,14 +97,27 @@ for step in range(0, 145, 6):
       extend='max',
   )
 
+  # Overlay Wind Barbs
+  ax.barbs(
+      lon_mesh,
+      lat_mesh,
+      u_2d,
+      v_2d,
+      transform=ccrs.PlateCarree(),
+      length=5.5,
+      color='k',
+      linewidth=0.5,
+      alpha=0.7,
+  )
+
   cbar = plt.colorbar(
       cf, ax=ax, orientation='horizontal', pad=0.08, shrink=0.7
   )
   cbar.set_label('10m Wind Speed (km/h)')
-  cbar.set_ticks(np.arange(0, 301, 60))  # Clean spacing for colorbar ticks
+  cbar.set_ticks(np.arange(0, 301, 60))
 
   plt.title(
-      'ECMWF 10m Wind Speed Forecast (Open-Meteo)',
+      'ECMWF 10m Wind Speed & Barbs (Open-Meteo)',
       fontsize=11,
       weight='bold',
       loc='left',
