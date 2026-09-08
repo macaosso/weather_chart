@@ -31,23 +31,15 @@ if isinstance(res_grid, dict):
     raise RuntimeError(f"Open-Meteo API Error: {res_grid.get('reason')}")
   res_grid = [res_grid]
 
-# 3. Setup interpolation mesh and custom colormap for wind speed ranges
+# 3. Setup interpolation mesh and finer colormap for wind speed ranges
 interp_lon, interp_lat = np.meshgrid(
     np.linspace(105, 130, 200), np.linspace(10, 30, 200)
 )
 
-# Wind speed bins and custom colors
-levels = [0, 40, 62, 87, 117, 148, 300]
-colors = [
-    '#98fb98',  # Light Green (<40)
-    '#87ceeb',  # Light Blue (<62)
-    '#ffdab9',  # Light Orange (<87)
-    '#f08080',  # Light Red (<117)
-    '#dda0dd',  # Light Purple (<148)
-    '#4f4f4f',  # Light Black / Dark Gray (<300)
-]
-cmap = matplotlib.colors.ListedColormap(colors)
-norm = matplotlib.colors.BoundaryNorm(levels, cmap.N)
+# Finer wind speed bins (every 15 km/h up to 300 km/h)
+levels = np.arange(0, 305, 15)
+cmap = plt.get_cmap('turbo')  # Smooth, high-contrast colormap
+norm = matplotlib.colors.BoundaryNorm(levels, cmap.N, extend='max')
 
 # 4. Loop from 0H to 144H every 6H
 for step in range(0, 145, 6):
@@ -84,7 +76,7 @@ for step in range(0, 145, 6):
       levels=levels,
       cmap=cmap,
       norm=norm,
-      alpha=0.8,
+      alpha=0.85,
       transform=ccrs.PlateCarree(),
       extend='max',
   )
@@ -93,6 +85,7 @@ for step in range(0, 145, 6):
       cf, ax=ax, orientation='horizontal', pad=0.08, shrink=0.7
   )
   cbar.set_label('10m Wind Speed (km/h)')
+  cbar.set_ticks(np.arange(0, 301, 60))  # Clean spacing for colorbar ticks
 
   plt.title(
       'ECMWF 10m Wind Speed Forecast (Open-Meteo)',
