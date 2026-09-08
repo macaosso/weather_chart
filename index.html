@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Regional Synoptic Weather Chart Loop</title>
+    <title>Weather Charts & ECMWF Wind Forecast</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,7 +17,34 @@
         }
         h1 {
             font-size: 1.4rem;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-width: 850px;
+            width: 100%;
+            justify-content: center;
+        }
+        .tab-btn {
+            background-color: #e2e8f0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background 0.2s;
+            width: auto;
+            height: auto;
+        }
+        .tab-btn.active {
+            background-color: #007bff;
+            color: white;
         }
         .container {
             background: #fff;
@@ -68,20 +95,22 @@
         .timeline {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             justify-content: center;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 5px;
         }
         .time-btn {
             background-color: #e2e8f0;
             color: #333;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             width: auto;
             height: auto;
-            border-radius: 4px;
         }
         .time-btn.active {
             background-color: #007bff;
@@ -98,8 +127,13 @@
 </head>
 <body>
 
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('synoptic')">Synoptic Pressure Chart</button>
+        <button class="tab-btn" onclick="switchTab('wind')">ECMWF Wind Forecast</button>
+    </div>
+
     <div class="container">
-        <h1>Regional Synoptic Weather Chart Loop</h1>
+        <h1 id="pageTitle">Regional Synoptic Weather Chart Loop</h1>
         <div class="status" id="statusLabel">Loading...</div>
         
         <div class="image-container">
@@ -118,49 +152,98 @@
     </div>
 
     <script>
-        const frames = [
+        // Define Synoptic Pressure Frames
+        const synopticFrames = [
             { label: '-18H', file: 'B18map90146842.png', desc: '18 Hours Before (-18H)' },
             { label: '-12H', file: 'B12map90146842.png', desc: '12 Hours Before (-12H)' },
             { label: '-6H',  file: 'B6map90146842.png',  desc: '6 Hours Before (-6H)' },
-            { label: '0H (Current)', file: '0map90146842.png', desc: 'Current Forecast (0H)' },
+            { label: '0H',   file: '0map90146842.png',   desc: 'Current Forecast (0H)' },
             { label: '+6H',  file: 'A6map90146842.png',  desc: '6 Hours After (+6H)' },
             { label: '+12H', file: 'A12map90146842.png', desc: '12 Hours After (+12H)' },
             { label: '+18H', file: 'A18map90146842.png', desc: '18 Hours After (+18H)' },
             { label: '+24H', file: 'A24map90146842.png', desc: '24 Hours After (+24H)' }
         ];
 
-        let currentIndex = 3; // Default to 0H
+        // Define ECMWF Wind Forecast Frames (0H to 144H every 6H)
+        const windFrames = [];
+        for (let step = 0; step <= 144; step += 6) {
+            windFrames.push({
+                label: `+${step}H`,
+                file: `ECwind/ECwind${step}.png`,
+                desc: `ECMWF Wind Forecast (+${step}H)`
+            });
+        }
+
+        let currentTab = 'synoptic';
+        let currentIndex = 3; // Default to 0H for synoptic
         let isPlaying = false;
         let playInterval = null;
 
         const imgElement = document.getElementById('weatherImage');
         const statusLabel = document.getElementById('statusLabel');
+        const pageTitle = document.getElementById('pageTitle');
         const playBtn = document.getElementById('playBtn');
         const timelineContainer = document.getElementById('timelineContainer');
+        const tabBtns = document.querySelectorAll('.tab-btn');
 
-        // Build timeline buttons
-        frames.forEach((frame, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'time-btn';
-            btn.innerText = frame.label;
-            btn.onclick = () => {
-                stopPlayback();
-                currentIndex = idx;
-                updateFrame();
-            };
-            timelineContainer.appendChild(btn);
-        });
+        function getCurrentFrames() {
+            return currentTab === 'synoptic' ? synopticFrames : windFrames;
+        }
 
-        const timelineBtns = document.querySelectorAll('.time-btn');
+        function switchTab(tabName) {
+            stopPlayback();
+            currentTab = tabName;
+            
+            // Update Tab UI active state
+            tabBtns.forEach(btn => {
+                if ((tabName === 'synoptic' && btn.innerText.includes('Synoptic')) ||
+                    (tabName === 'wind' && btn.innerText.includes('Wind'))) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            if (currentTab === 'synoptic') {
+                pageTitle.innerText = 'Regional Synoptic Weather Chart Loop';
+                currentIndex = 3; // Default to 0H index
+            } else {
+                pageTitle.innerText = 'ECMWF Wind Speed Forecast Loop (105°E-130°E, 10°N-30°N)';
+                currentIndex = 0; // Default to +0H index
+            }
+
+            buildTimeline();
+            updateFrame();
+        }
+
+        function buildTimeline() {
+            timelineContainer.innerHTML = '';
+            const frames = getCurrentFrames();
+
+            frames.forEach((frame, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'time-btn';
+                btn.innerText = frame.label;
+                btn.onclick = () => {
+                    stopPlayback();
+                    currentIndex = idx;
+                    updateFrame();
+                };
+                timelineContainer.appendChild(btn);
+            });
+        }
 
         function updateFrame() {
+            const frames = getCurrentFrames();
             const frame = frames[currentIndex];
             imgElement.src = frame.file;
             statusLabel.innerText = frame.desc;
             
+            const timelineBtns = timelineContainer.querySelectorAll('.time-btn');
             timelineBtns.forEach((btn, idx) => {
                 if (idx === currentIndex) {
                     btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
                 } else {
                     btn.classList.remove('active');
                 }
@@ -168,11 +251,13 @@
         }
 
         function nextFrame() {
+            const frames = getCurrentFrames();
             currentIndex = (currentIndex + 1) % frames.length;
             updateFrame();
         }
 
         function prevFrame() {
+            const frames = getCurrentFrames();
             currentIndex = (currentIndex - 1 + frames.length) % frames.length;
             updateFrame();
         }
@@ -201,7 +286,8 @@
         document.getElementById('prevBtn').onclick = () => { stopPlayback(); prevFrame(); };
         playBtn.onclick = togglePlay;
 
-        // Initialize view
+        // Initialize default view
+        buildTimeline();
         updateFrame();
     </script>
 </body>
