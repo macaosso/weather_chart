@@ -32,7 +32,7 @@ jobs:
           pip install matplotlib cartopy numpy requests scipy
 
       - name: Run weather chart script
-        run: python weather chart.py
+        run: python weather_chart.py
 
       - name: Commit and push updated maps
         run: |
