@@ -48,7 +48,7 @@ cities = {
 }
 
 # Generate frames from 0H to 360H every 6 hours (61 total frames)
-for step in range(0, 361, 6):
+for step in range(0, 145, 6):
   precips, wspeeds, wdirs = [], [], []
   for loc in res:
     hourly = loc.get('hourly', {})
