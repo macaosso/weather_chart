@@ -34,9 +34,6 @@ jobs:
       - name: Run ECMWF wind forecast script
         run: python ECwind.py
 
-      - name: Run rain wind forecast script
-        run: python rain_wind_map.py
-
       - name: Commit and push updated maps
         run: |
           git config --global user.name 'github-actions[bot]'
