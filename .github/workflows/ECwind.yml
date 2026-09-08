@@ -31,9 +31,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install matplotlib cartopy numpy requests scipy
 
-      - name: Run weather chart script
-        run: python weather_chart.py
-
       - name: Run ECMWF wind forecast script
         run: python ECwind.py
 
