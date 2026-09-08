@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Charts & ECMWF Wind Forecast</title>
+    <title>Weather Charts & Δp(972) North Surge Analysis</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -27,15 +27,16 @@
             max-width: 850px;
             width: 100%;
             justify-content: center;
+            flex-wrap: wrap;
         }
         .tab-btn {
             background-color: #e2e8f0;
             color: #333;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 15px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: background 0.2s;
@@ -56,6 +57,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        .tab-content {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+        .tab-content.active {
+            display: flex;
         }
         .image-container {
             width: 100%;
@@ -123,6 +133,65 @@
             color: #0056b3;
             font-size: 1.1rem;
         }
+        .deltap-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        .deltap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-box {
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-top: 5px;
+        }
+        .info-text {
+            line-height: 1.6;
+            font-size: 0.95rem;
+            color: #4a5568;
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .warning-box {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeeba;
+            font-weight: bold;
+        }
+        table.ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        table.ref-table th, table.ref-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        table.ref-table th {
+            background: #e2e8f0;
+        }
     </style>
 </head>
 <body>
@@ -130,29 +199,99 @@
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('synoptic')">Synoptic Pressure Chart</button>
         <button class="tab-btn" onclick="switchTab('wind')">ECMWF Wind Forecast</button>
+        <button class="tab-btn" onclick="switchTab('deltap')">Δp(972) 北風潮分析</button>
     </div>
 
     <div class="container">
-        <h1 id="pageTitle">Regional Synoptic Weather Chart Loop</h1>
-        <div class="status" id="statusLabel">Loading...</div>
         
-        <div class="image-container">
-            <img id="weatherImage" src="" alt="Weather Chart">
+        <!-- Tab 1: Synoptic Chart -->
+        <div id="tab-synoptic" class="tab-content active">
+            <h1 id="pageTitleSynoptic">Regional Synoptic Weather Chart Loop</h1>
+            <div class="status" id="statusLabelSynoptic">Loading...</div>
+            
+            <div class="image-container">
+                <img id="weatherImage" src="" alt="Weather Chart">
+            </div>
+
+            <div class="controls">
+                <button id="prevBtn" title="Previous">&#9664;</button>
+                <button id="playBtn" title="Play/Pause">&#9658;</button>
+                <button id="nextBtn" title="Next">&#9654;</button>
+            </div>
+
+            <div class="timeline" id="timelineContainer"></div>
         </div>
 
-        <div class="controls">
-            <button id="prevBtn" title="Previous">&#9664;</button>
-            <button id="playBtn" title="Play/Pause">&#9658;</button>
-            <button id="nextBtn" title="Next">&#9654;</button>
+        <!-- Tab 2: EC Wind -->
+        <div id="tab-wind" class="tab-content">
+            <h1>ECMWF Wind Speed Forecast Loop (105°E-130°E, 10°N-30°N)</h1>
+            <div class="status" id="statusLabelWind">Loading...</div>
+            
+            <div class="image-container">
+                <img id="windImage" src="" alt="ECMWF Wind Forecast">
+            </div>
+
+            <div class="controls">
+                <button id="windPrevBtn" title="Previous">&#9664;</button>
+                <button id="windPlayBtn" title="Play/Pause">&#9658;</button>
+                <button id="windNextBtn" title="Next">&#9654;</button>
+            </div>
+
+            <div class="timeline" id="windTimelineContainer"></div>
         </div>
 
-        <div class="timeline" id="timelineContainer">
-            <!-- Timeline buttons generated dynamically -->
+        <!-- Tab 3: Delta P 972 -->
+        <div id="tab-deltap" class="tab-content">
+            <h1>Δp(972) 北風潮即時計算與分析</h1>
+            <div class="status">實時氣壓差監測與抵達時間預測</div>
+
+            <div class="deltap-card">
+                <div id="deltaP-warnings" class="warning-box">正在從 Open-Meteo 獲取實時數據...</div>
+                
+                <div class="deltap-grid">
+                    <div class="metric-box">
+                        <div>當前 Δp(972) 氣壓差</div>
+                        <div class="metric-value" id="deltaP-value">--</div>
+                    </div>
+                    <div class="metric-box">
+                        <div>預估北風潮到達時間</div>
+                        <div class="metric-value" id="deltaP-arrival">--</div>
+                    </div>
+                    <div class="metric-box">
+                        <div>過去 6 小時氣壓差變化</div>
+                        <div class="metric-value" id="deltaP-rise">--</div>
+                    </div>
+                    <div class="metric-box">
+                        <div>測站氣壓 (郴州 / 香港)</div>
+                        <div class="metric-value" style="font-size: 1.1rem; margin-top: 10px;" id="deltaP-stations">
+                            <span id="deltaP-cz">--</span> / <span id="deltaP-hk">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-text">
+                    <strong>Δp(972) 說明與使用規則：</strong><br><br>
+                    Δp(972) 是指郴州（WMO氣象站編號 57972，位於北緯 25.8 度、東經 113.0 度）與香港之氣壓差，用來預測每年十月至三/四月影響香港之北風潮抵達時間及強度。<br><br>
+                    Δp(972) 為正數時，表示郴州的氣壓較香港高。<br><br>
+                    它的數值與北風潮抵達的時間關係如下：
+                    <table class="ref-table">
+                        <tr><th>Δp(972)（百帕）</th><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+                        <tr><th>到達時間（小時）</th><td>18</td><td>15</td><td>12</td><td>9</td></tr>
+                    </table>
+                    <ul>
+                        <li>如 Δp(972) 的數值停留在 7 百帕，北風潮到達時間或會延遲。</li>
+                        <li>如 Δp(972) 過去 6 小時上升超過 2 百帕或預料 Δp(972) 將上升至 10 百帕以上，北風潮可能為香港帶來強風。</li>
+                        <li>當 Δp(972) 及 Δp(S) 的數值相若時，Δp(972) 的預測效果可能會較差。</li>
+                    </ul>
+                    當熱帶氣旋在南中國海，而北風潮抵達時，意味著大陸性反氣旋南下，華南沿岸的氣壓梯度會顯著增加，以至本港風力顯著加強。另外，北風潮的乾冷空氣也會使熱帶氣旋快速減弱。
+                </div>
+            </div>
         </div>
+
     </div>
 
     <script>
-        // Define Synoptic Pressure Frames
+        // --- Synoptic Frames Logic ---
         const synopticFrames = [
             { label: '-18H', file: 'B18map90146842.png', desc: '18 Hours Before (-18H)' },
             { label: '-12H', file: 'B12map90146842.png', desc: '12 Hours Before (-12H)' },
@@ -164,7 +303,74 @@
             { label: '+24H', file: 'A24map90146842.png', desc: '24 Hours After (+24H)' }
         ];
 
-        // Define ECMWF Wind Forecast Frames (0H to 144H every 6H)
+        let synopticIndex = 3;
+        let synopticPlaying = false;
+        let synopticInterval = null;
+
+        const imgElement = document.getElementById('weatherImage');
+        const statusLabelSynoptic = document.getElementById('statusLabelSynoptic');
+        const timelineContainer = document.getElementById('timelineContainer');
+
+        function buildSynopticTimeline() {
+            timelineContainer.innerHTML = '';
+            synopticFrames.forEach((frame, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'time-btn';
+                btn.innerText = frame.label;
+                btn.onclick = () => {
+                    stopSynopticPlay();
+                    synopticIndex = idx;
+                    updateSynopticFrame();
+                };
+                timelineContainer.appendChild(btn);
+            });
+        }
+
+        function updateSynopticFrame() {
+            const frame = synopticFrames[synopticIndex];
+            imgElement.src = frame.file;
+            statusLabelSynoptic.innerText = frame.desc;
+            
+            const btns = timelineContainer.querySelectorAll('.time-btn');
+            btns.forEach((btn, idx) => {
+                if (idx === synopticIndex) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function nextSynopticFrame() {
+            synopticIndex = (synopticIndex + 1) % synopticFrames.length;
+            updateSynopticFrame();
+        }
+
+        function prevSynopticFrame() {
+            synopticIndex = (synopticIndex - 1 + synopticFrames.length) % synopticFrames.length;
+            updateSynopticFrame();
+        }
+
+        function stopSynopticPlay() {
+            synopticPlaying = false;
+            document.getElementById('playBtn').innerHTML = '&#9658;';
+            clearInterval(synopticInterval);
+        }
+
+        document.getElementById('nextBtn').onclick = () => { stopSynopticPlay(); nextSynopticFrame(); };
+        document.getElementById('prevBtn').onclick = () => { stopSynopticPlay(); prevSynopticFrame(); };
+        document.getElementById('playBtn').onclick = () => {
+            if (synopticPlaying) {
+                stopSynopticPlay();
+            } else {
+                synopticPlaying = true;
+                document.getElementById('playBtn').innerHTML = '&#10074;&#10074;';
+                synopticInterval = setInterval(nextSynopticFrame, 1200);
+            }
+        };
+
+        // --- Wind Frames Logic ---
         const windFrames = [];
         for (let step = 0; step <= 144; step += 6) {
             windFrames.push({
@@ -174,121 +380,179 @@
             });
         }
 
-        let currentTab = 'synoptic';
-        let currentIndex = 3; // Default to 0H for synoptic
-        let isPlaying = false;
-        let playInterval = null;
+        let windIndex = 0;
+        let windPlaying = false;
+        let windInterval = null;
 
-        const imgElement = document.getElementById('weatherImage');
-        const statusLabel = document.getElementById('statusLabel');
-        const pageTitle = document.getElementById('pageTitle');
-        const playBtn = document.getElementById('playBtn');
-        const timelineContainer = document.getElementById('timelineContainer');
-        const tabBtns = document.querySelectorAll('.tab-btn');
+        const windImgElement = document.getElementById('windImage');
+        const statusLabelWind = document.getElementById('statusLabelWind');
+        const windTimelineContainer = document.getElementById('windTimelineContainer');
 
-        function getCurrentFrames() {
-            return currentTab === 'synoptic' ? synopticFrames : windFrames;
-        }
-
-        function switchTab(tabName) {
-            stopPlayback();
-            currentTab = tabName;
-            
-            // Update Tab UI active state
-            tabBtns.forEach(btn => {
-                if ((tabName === 'synoptic' && btn.innerText.includes('Synoptic')) ||
-                    (tabName === 'wind' && btn.innerText.includes('Wind'))) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-
-            if (currentTab === 'synoptic') {
-                pageTitle.innerText = 'Regional Synoptic Weather Chart Loop';
-                currentIndex = 3; // Default to 0H index
-            } else {
-                pageTitle.innerText = 'ECMWF Wind Speed Forecast Loop (105°E-130°E, 10°N-30°N)';
-                currentIndex = 0; // Default to +0H index
-            }
-
-            buildTimeline();
-            updateFrame();
-        }
-
-        function buildTimeline() {
-            timelineContainer.innerHTML = '';
-            const frames = getCurrentFrames();
-
-            frames.forEach((frame, idx) => {
+        function buildWindTimeline() {
+            windTimelineContainer.innerHTML = '';
+            windFrames.forEach((frame, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'time-btn';
                 btn.innerText = frame.label;
                 btn.onclick = () => {
-                    stopPlayback();
-                    currentIndex = idx;
-                    updateFrame();
+                    stopWindPlay();
+                    windIndex = idx;
+                    updateWindFrame();
                 };
-                timelineContainer.appendChild(btn);
+                windTimelineContainer.appendChild(btn);
             });
         }
 
-        function updateFrame() {
-            const frames = getCurrentFrames();
-            const frame = frames[currentIndex];
-            imgElement.src = frame.file;
-            statusLabel.innerText = frame.desc;
+        function updateWindFrame() {
+            const frame = windFrames[windIndex];
+            windImgElement.src = frame.file;
+            statusLabelWind.innerText = frame.desc;
             
-            const timelineBtns = timelineContainer.querySelectorAll('.time-btn');
-            timelineBtns.forEach((btn, idx) => {
-                if (idx === currentIndex) {
+            const btns = windTimelineContainer.querySelectorAll('.time-btn');
+            btns.forEach((btn, idx) => {
+                if (idx === windIndex) {
                     btn.classList.add('active');
-                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 } else {
                     btn.classList.remove('active');
                 }
             });
         }
 
-        function nextFrame() {
-            const frames = getCurrentFrames();
-            currentIndex = (currentIndex + 1) % frames.length;
-            updateFrame();
+        function nextWindFrame() {
+            windIndex = (windIndex + 1) % windFrames.length;
+            updateWindFrame();
         }
 
-        function prevFrame() {
-            const frames = getCurrentFrames();
-            currentIndex = (currentIndex - 1 + frames.length) % frames.length;
-            updateFrame();
+        function prevWindFrame() {
+            windIndex = (windIndex - 1 + windFrames.length) % windFrames.length;
+            updateWindFrame();
         }
 
-        function togglePlay() {
-            if (isPlaying) {
-                stopPlayback();
+        function stopWindPlay() {
+            windPlaying = false;
+            document.getElementById('windPlayBtn').innerHTML = '&#9658;';
+            clearInterval(windInterval);
+        }
+
+        document.getElementById('windNextBtn').onclick = () => { stopWindPlay(); nextWindFrame(); };
+        document.getElementById('windPrevBtn').onclick = () => { stopWindPlay(); prevWindFrame(); };
+        document.getElementById('windPlayBtn').onclick = () => {
+            if (windPlaying) {
+                stopWindPlay();
             } else {
-                startPlayback();
+                windPlaying = true;
+                document.getElementById('windPlayBtn').innerHTML = '&#10074;&#10074;';
+                windInterval = setInterval(nextWindFrame, 1200);
+            }
+        };
+
+        // --- Tabs Logic ---
+        function switchTab(tabName) {
+            stopSynopticPlay();
+            stopWindPlay();
+
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'synoptic') {
+                document.querySelector('button[onclick*="synoptic"]').classList.add('active');
+                document.getElementById('tab-synoptic').classList.add('active');
+            } else if (tabName === 'wind') {
+                document.querySelector('button[onclick*="wind"]').classList.add('active');
+                document.getElementById('tab-wind').classList.add('active');
+            } else if (tabName === 'deltap') {
+                document.querySelector('button[onclick*="deltap"]').classList.add('active');
+                document.getElementById('tab-deltap').classList.add('active');
+                fetchDeltaP972();
             }
         }
 
-        function startPlayback() {
-            isPlaying = true;
-            playBtn.innerHTML = '&#10074;&#10074;'; // Pause icon
-            playInterval = setInterval(nextFrame, 1200); // 1.2 seconds per frame loop
+        // --- Delta P 972 Calculation using Open-Meteo ---
+        async function fetchDeltaP972() {
+            try {
+                // Chenzhou (25.8°N, 113.0°E) & Hong Kong (22.3°N, 114.17°E)
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.8,22.3&longitude=113.0,114.17&hourly=pressure_msl&past_days=1&forecast_days=1');
+                const data = await response.json();
+                
+                const czHourly = data[0].hourly;
+                const hkHourly = data[1].hourly;
+                const times = czHourly.time;
+                const czPressures = czHourly.pressure_msl;
+                const hkPressures = hkHourly.pressure_msl;
+                
+                const now = new Date();
+                const year = now.getUTCFullYear();
+                const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(now.getUTCDate()).padStart(2, '0');
+                const hour = String(now.getUTCHours()).padStart(2, '0');
+                const targetStr = `${year}-${month}-${day}T${hour}:00`;
+                
+                let currentIndex = times.indexOf(targetStr);
+                if (currentIndex === -1) currentIndex = times.length - 1;
+                
+                const currentCZ = czPressures[currentIndex];
+                const currentHK = hkPressures[currentIndex];
+                const deltaP = currentCZ - currentHK;
+                
+                // Past 6 hours rise
+                const past6Index = Math.max(0, currentIndex - 6);
+                const past6CZ = czPressures[past6Index];
+                const past6HK = hkPressures[past6Index];
+                const deltaP_past6 = past6CZ - past6HK;
+                const rise6h = deltaP - deltaP_past6;
+                
+                // Estimate arrival time based on reference table: 6h->18h, 7h->15h, 8h->12h, 9h->9h
+                let arrivalHours = 36 - (3 * deltaP);
+                if (deltaP < 4) {
+                    arrivalHours = "超過 24 小時 / 尚未明顯";
+                } else if (arrivalHours < 2) {
+                    arrivalHours = "已抵達或小於 3 小時";
+                } else {
+                    arrivalHours = Math.round(arrivalHours) + " 小時";
+                }
+                
+                // Warnings evaluation based on rules
+                let warnings = [];
+                if (Math.abs(deltaP - 7) < 0.5) {
+                    warnings.push("⚠️ 提示：Δp(972) 數值停留在 7 百帕左右，北風潮到達時間或會延遲。");
+                }
+                if (rise6h > 2) {
+                    warnings.push("⚠️ 警告：過去 6 小時氣壓差上升超過 2 百帕（上升了 " + rise6h.toFixed(1) + " hPa），北風潮可能為香港帶來強風！");
+                }
+                if (deltaP >= 10) {
+                    warnings.push("⚠️ 警告：Δp(972) 已達 10 百帕以上，北風潮可能為香港帶來強風！");
+                }
+                
+                document.getElementById('deltaP-value').innerText = deltaP.toFixed(1) + " hPa";
+                document.getElementById('deltaP-cz').innerText = currentCZ + " hPa";
+                document.getElementById('deltaP-hk').innerText = currentHK + " hPa";
+                document.getElementById('deltaP-arrival').innerText = arrivalHours;
+                document.getElementById('deltaP-rise').innerText = rise6h > 0 ? "+" + rise6h.toFixed(1) + " hPa" : rise6h.toFixed(1) + " hPa";
+                
+                const warningContainer = document.getElementById('deltaP-warnings');
+                if (warnings.length > 0) {
+                    warningContainer.style.display = 'block';
+                    warningContainer.innerHTML = warnings.join('<br>');
+                } else {
+                    warningContainer.style.display = 'block';
+                    warningContainer.style.background = '#e2f0d9';
+                    warningContainer.style.color = '#385723';
+                    warningContainer.style.borderColor = '#c5e0b4';
+                    warningContainer.innerHTML = "✅ 目前 Δp(972) 狀態平穩，無特殊強風或顯著延遲警報。";
+                }
+                
+            } catch (err) {
+                console.error("Error fetching Open-Meteo for Delta P:", err);
+                document.getElementById('deltaP-warnings').innerHTML = "❌ 無法從 Open-Meteo 獲取實時氣壓數據，請檢查網路連線。";
+            }
         }
 
-        function stopPlayback() {
-            isPlaying = false;
-            playBtn.innerHTML = '&#9658;'; // Play icon
-            clearInterval(playInterval);
-        }
-
-        document.getElementById('nextBtn').onclick = () => { stopPlayback(); nextFrame(); };
-        document.getElementById('prevBtn').onclick = () => { stopPlayback(); prevFrame(); };
-        playBtn.onclick = togglePlay;
-
-        // Initialize default view
-        buildTimeline();
-        updateFrame();
+        // Initialize default views
+        buildSynopticTimeline();
+        updateSynopticFrame();
+        buildWindTimeline();
+        updateWindFrame();
     </script>
 </body>
 </html>
