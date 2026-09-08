@@ -13,7 +13,7 @@ matplotlib.use('Agg')
 os.makedirs('ECwind', exist_ok=True)
 
 # 1. Setup grid matching extent: (105, 130, 10, 30)
-lons_grid = np.arange(105, 130, 2.0)
+lons_grid = np.arange(105, 131, 2.0)
 lats_grid = np.arange(10, 31, 2.0)
 lon_mesh, lat_mesh = np.meshgrid(lons_grid, lats_grid)
 flat_lons = lon_mesh.flatten()
@@ -31,13 +31,28 @@ if isinstance(res_grid, dict):
     raise RuntimeError(f"Open-Meteo API Error: {res_grid.get('reason')}")
   res_grid = [res_grid]
 
-# 3. Setup interpolation mesh and smooth colormap for wind speed ranges
+# 3. Setup interpolation mesh and custom gradual colormap
 interp_lon, interp_lat = np.meshgrid(
     np.linspace(105, 130, 200), np.linspace(10, 30, 200)
 )
 
-levels = np.arange(0, 305, 15)
-cmap = plt.get_cmap('turbo')
+# Custom wind speed thresholds and corresponding gradual colors
+levels = [0, 20, 40, 60, 90, 120, 300]
+colors = [
+    'white',  # 0 km/h
+    '#98fb98',  # Light Green (20 km/h)
+    '#87ceeb',  # Light Blue (40 km/h)
+    '#ffdab9',  # Light Orange (60 km/h)
+    '#f08080',  # Light Red (90 km/h)
+    '#dda0dd',  # Light Purple (120+ km/h)
+]
+
+# Create a continuous gradual colormap matching the specified thresholds
+norm_levels = (np.array(levels) - levels[0]) / (levels[-1] - levels[0])
+color_list = list(zip(norm_levels, colors))
+cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+    'gradual_wind', color_list
+)
 norm = matplotlib.colors.BoundaryNorm(levels, cmap.N, extend='max')
 
 # 4. Loop from 0H to 144H every 6H
@@ -60,11 +75,9 @@ for step in range(0, 145, 6):
   u_wind = -wind_speeds * np.sin(rad)
   v_wind = -wind_speeds * np.cos(rad)
 
-  # Reshape U and V to match grid dimensions for barbs
   u_2d = u_wind.reshape(lon_mesh.shape)
   v_2d = v_wind.reshape(lon_mesh.shape)
 
-  # Interpolate wind speed for contour fill background
   grid_wind_2d = griddata(
       (flat_lons, flat_lats),
       wind_speeds,
@@ -114,7 +127,7 @@ for step in range(0, 145, 6):
       cf, ax=ax, orientation='horizontal', pad=0.08, shrink=0.7
   )
   cbar.set_label('10m Wind Speed (km/h)')
-  cbar.set_ticks(np.arange(0, 301, 60))
+  cbar.set_ticks(levels[:-1])
 
   plt.title(
       'ECMWF 10m Wind Speed & Barbs (Open-Meteo)',
