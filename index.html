@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regional Synoptic Weather Chart Loop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 850px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .image-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .time-btn {
+            background-color: #e2e8f0;
+            color: #333;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            width: auto;
+            height: auto;
+            border-radius: 4px;
+        }
+        .time-btn.active {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .status {
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #0056b3;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Regional Synoptic Weather Chart Loop</h1>
+        <div class="status" id="statusLabel">Loading...</div>
+        
+        <div class="image-container">
+            <img id="weatherImage" src="" alt="Weather Chart">
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" title="Previous">&#9664;</button>
+            <button id="playBtn" title="Play/Pause">&#9658;</button>
+            <button id="nextBtn" title="Next">&#9654;</button>
+        </div>
+
+        <div class="timeline" id="timelineContainer">
+            <!-- Timeline buttons generated dynamically -->
+        </div>
+    </div>
+
+    <script>
+        const frames = [
+            { label: '-18H', file: 'B18map90146842.png', desc: '18 Hours Before (-18H)' },
+            { label: '-12H', file: 'B12map90146842.png', desc: '12 Hours Before (-12H)' },
+            { label: '-6H',  file: 'B6map90146842.png',  desc: '6 Hours Before (-6H)' },
+            { label: '0H (Current)', file: '0map90146842.png', desc: 'Current Forecast (0H)' },
+            { label: '+6H',  file: 'A6map90146842.png',  desc: '6 Hours After (+6H)' },
+            { label: '+12H', file: 'A12map90146842.png', desc: '12 Hours After (+12H)' },
+            { label: '+18H', file: 'A18map90146842.png', desc: '18 Hours After (+18H)' },
+            { label: '+24H', file: 'A24map90146842.png', desc: '24 Hours After (+24H)' }
+        ];
+
+        let currentIndex = 3; // Default to 0H
+        let isPlaying = false;
+        let playInterval = null;
+
+        const imgElement = document.getElementById('weatherImage');
+        const statusLabel = document.getElementById('statusLabel');
+        const playBtn = document.getElementById('playBtn');
+        const timelineContainer = document.getElementById('timelineContainer');
+
+        // Build timeline buttons
+        frames.forEach((frame, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'time-btn';
+            btn.innerText = frame.label;
+            btn.onclick = () => {
+                stopPlayback();
+                currentIndex = idx;
+                updateFrame();
+            };
+            timelineContainer.appendChild(btn);
+        });
+
+        const timelineBtns = document.querySelectorAll('.time-btn');
+
+        function updateFrame() {
+            const frame = frames[currentIndex];
+            imgElement.src = frame.file;
+            statusLabel.innerText = frame.desc;
+            
+            timelineBtns.forEach((btn, idx) => {
+                if (idx === currentIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function nextFrame() {
+            currentIndex = (currentIndex + 1) % frames.length;
+            updateFrame();
+        }
+
+        function prevFrame() {
+            currentIndex = (currentIndex - 1 + frames.length) % frames.length;
+            updateFrame();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopPlayback();
+            } else {
+                startPlayback();
+            }
+        }
+
+        function startPlayback() {
+            isPlaying = true;
+            playBtn.innerHTML = '&#10074;&#10074;'; // Pause icon
+            playInterval = setInterval(nextFrame, 1200); // 1.2 seconds per frame loop
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+            playBtn.innerHTML = '&#9658;'; // Play icon
+            clearInterval(playInterval);
+        }
+
+        document.getElementById('nextBtn').onclick = () => { stopPlayback(); nextFrame(); };
+        document.getElementById('prevBtn').onclick = () => { stopPlayback(); prevFrame(); };
+        playBtn.onclick = togglePlay;
+
+        // Initialize view
+        updateFrame();
+    </script>
+</body>
+</html>
