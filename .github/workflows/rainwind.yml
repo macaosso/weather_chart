@@ -1,0 +1,43 @@
+name: Generate Rain and Wind Maps
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *' # Runs every 6 hours
+
+permissions:
+  contents: write
+
+jobs:
+  build-maps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install system dependencies (Cartopy requirements)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgeos-dev libproj-dev proj-data proj-bin
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install matplotlib cartopy numpy requests scipy
+
+      - name: Run rain and wind script
+        run: python rain_wind.py  # Make sure your python script filename matches this
+
+      - name: Commit and push updated maps
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add rain_wind_maps/*.png
+          git commit -m "Auto-update rain & wind maps: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || echo "No changes to commit"
+          git push
