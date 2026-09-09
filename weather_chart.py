@@ -20,8 +20,8 @@ flat_lats = lat_mesh.flatten()
 lat_str = ','.join(map(str, flat_lats))
 lon_str = ','.join(map(str, flat_lons))
 
-# Include past_days and forecast_days to safely cover -18H to +24H window
-url_grid = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=pressure_msl&past_days=2&forecast_days=2'
+# Increased forecast_days to 4 to safely cover up to +72H window
+url_grid = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=pressure_msl&past_days=2&forecast_days=4'
 
 res_grid = requests.get(url_grid).json()
 if isinstance(res_grid, dict):
@@ -32,7 +32,7 @@ if isinstance(res_grid, dict):
 # Extract the shared time array from the first location
 times = res_grid[0].get('hourly', {}).get('time', [])
 
-# Define offsets and corresponding output filenames
+# Define offsets and corresponding output filenames (extended up to A72)
 offsets = {
     'B18': (-18, 'B18map90146842.png'),
     'B12': (-12, 'B12map90146842.png'),
@@ -42,6 +42,14 @@ offsets = {
     'A12': (12, 'A12map90146842.png'),
     'A18': (18, 'A18map90146842.png'),
     'A24': (24, 'A24map90146842.png'),
+    'A30': (30, 'A30map90146842.png'),
+    'A36': (36, 'A36map90146842.png'),
+    'A42': (42, 'A42map90146842.png'),
+    'A48': (48, 'A48map90146842.png'),
+    'A54': (54, 'A54map90146842.png'),
+    'A60': (60, 'A60map90146842.png'),
+    'A66': (66, 'A66map90146842.png'),
+    'A72': (72, 'A72map90146842.png'),
 }
 
 now_utc = datetime.datetime.utcnow().replace(minute=0, second=0, microsecond=0)
