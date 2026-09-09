@@ -116,7 +116,7 @@ for label, (offset_hrs, filename) in offsets.items():
           for loc in res_grid
       ]
   )
-  wind_speeds_kmh = raw_wind_speeds * 1.852
+  wind_speeds_kmh = raw_wind_speeds
 
   wind_dirs = np.array(
       [
@@ -178,8 +178,8 @@ for label, (offset_hrs, filename) in offsets.items():
   ax.barbs(
       lon_mesh,
       lat_mesh,
-      u_2d / 1.852,
-      v_2d / 1.852,
+      u_2d / ,
+      v_2d / ,
       transform=ccrs.PlateCarree(),
       length=5.5,
       color='k',
