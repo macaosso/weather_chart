@@ -27,7 +27,8 @@ flat_lats = lat_mesh.flatten()
 lat_str = ','.join(map(str, flat_lats))
 lon_str = ','.join(map(str, flat_lons))
 
-url_grid = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=pressure_msl&past_days=2&forecast_days=4'
+# Request MSL pressure along with wind speed and direction
+url_grid = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=pressure_msl,wind_speed_10m,wind_direction_10m&past_days=2&forecast_days=4'
 
 res_grid = requests.get(url_grid).json()
 if isinstance(res_grid, dict):
@@ -101,12 +102,28 @@ for label, (offset_hrs, filename) in offsets.items():
     print(f'Warning: Target time {target_str} not found in API response.')
     continue
 
-  # Extract pressures for the specific time index across all grid locations
+  # Extract pressures and wind data for the specific time index across all grid locations
   grid_pressures = [
       loc.get('hourly', {}).get('pressure_msl', [])[time_idx] or 1013.0
       for loc in res_grid
   ]
   grid_pressures = np.array(grid_pressures)
+
+  # Extract wind speeds and convert from knots to km/h (1 knot = 1.852 km/h)
+  raw_wind_speeds = np.array(
+      [
+          loc.get('hourly', {}).get('wind_speed_10m', [])[time_idx] or 0.0
+          for loc in res_grid
+      ]
+  )
+  wind_speeds_kmh = raw_wind_speeds * 1.852
+
+  wind_dirs = np.array(
+      [
+          loc.get('hourly', {}).get('wind_direction_10m', [])[time_idx] or 0.0
+          for loc in res_grid
+      ]
+  )
 
   # Interpolate pressure onto the 2D mesh
   grid_pressure_2d = griddata(
@@ -115,6 +132,14 @@ for label, (offset_hrs, filename) in offsets.items():
       (interp_lon, interp_lat),
       method='cubic',
   )
+
+  # Convert wind speed (km/h) and meteorological direction to U and V components
+  rad = np.radians(wind_dirs)
+  u_wind = -wind_speeds_kmh * np.sin(rad)
+  v_wind = -wind_speeds_kmh * np.cos(rad)
+
+  u_2d = u_wind.reshape(lon_mesh.shape)
+  v_2d = v_wind.reshape(lon_mesh.shape)
 
   highs = find_extrema_coords(
       grid_pressure_2d, interp_lon, interp_lat, mode='max', n=2
@@ -148,6 +173,19 @@ for label, (offset_hrs, filename) in offsets.items():
       linewidths=0.7,
   )
   ax.clabel(cs, inline=True, fontsize=8, fmt='%d')
+
+  # Overlay Wind Barbs (matplotlib barbs natively expect knots, so scale back km/h to knots for correct barb display)
+  ax.barbs(
+      lon_mesh,
+      lat_mesh,
+      u_2d / 1.852,
+      v_2d / 1.852,
+      transform=ccrs.PlateCarree(),
+      length=5.5,
+      color='k',
+      linewidth=0.5,
+      alpha=0.7,
+  )
 
   for h in highs:
     ax.text(
