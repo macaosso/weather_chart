@@ -3,261 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Weather App Mobile</title>
+    <title>Quantum Weather Station - Tech Dashboard</title>
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --panel-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --primary: #007bff;
-            --text-main: #1e293b;
+            --bg-color: #050b14;
+            --panel-bg: rgba(13, 20, 35, 0.85);
+            --panel-border: rgba(0, 242, 254, 0.25);
+            --primary: #00f2fe;
+            --primary-glow: rgba(0, 242, 254, 0.35);
+            --secondary: #4facfe;
+            --accent: #ff0844;
+            --text-main: #f1f5f9;
             --text-muted: #64748b;
+            --card-bg: rgba(18, 29, 51, 0.7);
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
-            margin: 0;
-            padding: 10px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(79, 172, 254, 0.05) 0%, transparent 40%);
             color: var(--text-main);
+            margin: 0;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
+            align-items: center;
+            padding: 12px;
         }
-        .mobile-container {
+
+        /* Responsive Dashboard Container */
+        .app-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 1200px;
             background: var(--panel-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 242, 254, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--panel-border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-sizing: border-box;
-            border: 1px solid var(--border-color);
         }
+
         /* Header */
         .app-header {
-            padding: 15px;
-            background: #ffffff;
-            border-bottom: 1px solid var(--border-color);
+            padding: 20px 24px;
+            background: linear-gradient(90deg, rgba(13, 20, 35, 0.95) 0%, rgba(20, 35, 60, 0.95) 100%);
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-left {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
+
         .app-title {
-            font-size: 1.1rem;
-            font-weight: bold;
+            font-size: 1.3rem;
+            font-weight: 800;
             color: var(--text-main);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
+        .app-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
         .app-subtitle {
             font-size: 0.8rem;
             color: var(--text-muted);
+            font-family: var(--font-mono);
         }
-        /* Mobile Tab Bar */
+
+        /* Navigation Tab Bar */
         .tab-bar {
             display: flex;
             overflow-x: auto;
-            background: #f1f5f9;
-            padding: 6px;
-            gap: 6px;
-            border-bottom: 1px solid var(--border-color);
-            scrollbar-width: none;
+            background: rgba(8, 14, 26, 0.8);
+            padding: 10px 16px;
+            gap: 8px;
+            border-bottom: 1px solid var(--panel-border);
         }
-        .tab-bar::-webkit-scrollbar {
-            display: none;
-        }
+
         .tab-btn {
             flex: 0 0 auto;
-            padding: 8px 14px;
-            font-size: 0.8rem;
+            padding: 10px 18px;
+            font-size: 0.85rem;
             font-weight: 600;
-            border: 1px solid transparent;
-            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
             color: var(--text-muted);
-            border-radius: 20px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: rgba(0, 242, 254, 0.4);
+            background: rgba(0, 242, 254, 0.05);
+        }
+
         .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 2px 6px rgba(0,123,255,0.3);
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2));
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
         }
-        /* Content Area */
+
+        /* Content Body Layout */
         .content-body {
-            padding: 12px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
+
         .view-section {
             display: none;
-            flex-direction: column;
-            gap: 12px;
+            grid-template-columns: 1fr;
+            gap: 16px;
         }
+
         .view-section.active {
-            display: flex;
+            display: grid;
         }
+
+        @media (min-width: 860px) {
+            .view-section {
+                grid-template-columns: 1.4fr 1fr;
+                align-items: start;
+            }
+            .full-width-panel {
+                grid-column: span 2;
+            }
+        }
+
         /* Map Viewport */
         .map-viewport {
             width: 100%;
             aspect-ratio: 4/3;
-            background: #000;
-            border-radius: 10px;
+            background: #02060d;
+            border-radius: 12px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--panel-border);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
         }
+
+        .map-viewport::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
         .map-viewport img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
-        /* Timeline Card */
-        .timeline-card {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px;
+
+        /* Control Panel Group */
+        .controls-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 16px;
         }
-        .slider-row {
+
+        /* Timeline Card */
+        .timeline-card {
+            background: var(--card-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 12px;
         }
+
         .slider-row input[type="range"] {
             width: 100%;
             accent-color: var(--primary);
             height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
         }
+
         .controls-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
         }
+
         .action-btn {
-            padding: 6px 12px;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             color: var(--text-main);
+            transition: all 0.2s;
         }
-        .action-btn.primary {
-            background: var(--primary);
-            color: white;
+
+        .action-btn:hover {
+            background: rgba(0, 242, 254, 0.15);
             border-color: var(--primary);
         }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #050b14;
+            border-color: transparent;
+            font-weight: 700;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
         /* Forecast Grid Selector */
         .forecast-grid-container {
+            background: var(--card-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 10px;
         }
+
         .forecast-label {
             font-size: 0.75rem;
-            font-weight: bold;
+            font-weight: 700;
             color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
+
         .forecast-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 4px;
-            max-height: 110px;
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+            gap: 6px;
+            max-height: 150px;
             overflow-y: auto;
-            background: #f8fafc;
-            padding: 6px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            padding: 4px;
         }
+
         .fcst-chip {
             aspect-ratio: 1;
-            border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: white;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
             font-size: 0.7rem;
-            font-weight: bold;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--text-muted);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
         }
+
+        .fcst-chip:hover {
+            border-color: var(--primary);
+            color: var(--text-main);
+        }
+
         .fcst-chip.active {
-            background: #ff7675;
-            color: white;
-            border-color: #d63031;
+            background: var(--primary);
+            color: #050b14;
+            border-color: var(--primary);
+            font-weight: 800;
+            box-shadow: 0 0 10px var(--primary-glow);
         }
-        /* Delta P Styles */
+
+        /* Delta P Analytics Styles */
         .deltap-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 12px;
         }
+
         .metric-card {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--panel-border);
+            padding: 16px;
+            border-radius: 12px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
         .metric-title {
             font-size: 0.75rem;
             color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+
         .metric-val {
-            font-size: 1.1rem;
-            font-weight: bold;
+            font-size: 1.4rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
             color: var(--primary);
-            margin-top: 4px;
+            margin-top: 6px;
+            text-shadow: 0 0 10px var(--primary-glow);
         }
+
         .alert-box {
-            background: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ffeeba;
-            font-size: 0.8rem;
-            font-weight: bold;
+            background: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            font-size: 0.85rem;
+            font-weight: 600;
             text-align: center;
         }
+
         .info-card {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 0.78rem;
-            line-height: 1.5;
-            color: #475569;
+            background: var(--card-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: var(--text-muted);
         }
+
+        .info-card strong {
+            color: var(--text-main);
+        }
+
         table.mini-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 8px 0;
+            margin: 12px 0;
         }
+
         table.mini-table th, table.mini-table td {
-            border: 1px solid var(--border-color);
-            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px;
             text-align: center;
             font-size: 0.75rem;
+            font-family: var(--font-mono);
         }
+
         table.mini-table th {
-            background: #e2e8f0;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
         }
     </style>
 </head>
 <body>
 
-    <div class="mobile-container">
+    <div class="app-container">
         <!-- Header -->
         <div class="app-header">
-            <div class="app-title" id="appHeaderTitle">地面天氣圖 (Synoptic)</div>
-            <div class="app-subtitle">起報: 2026年09月08日00時</div>
+            <div class="header-left">
+                <div class="app-title" id="appHeaderTitle">地面天氣圖 (Synoptic)</div>
+                <div class="app-subtitle">SYS_INIT: 2026-09-08_00Z // QUANTUM_METEO_CORE</div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary);">
+                ● SYSTEM ONLINE
+            </div>
         </div>
 
         <!-- Tab Bar -->
@@ -272,24 +425,26 @@
         <!-- Content Body -->
         <div class="content-body">
             
-            <!-- View 1: Synoptic Chart (Extended to A72) -->
+            <!-- View 1: Synoptic Chart -->
             <div id="sec-synoptic" class="view-section active">
                 <div class="map-viewport">
                     <img id="synopticImg" src="" alt="Synoptic Chart">
                 </div>
-                <div class="timeline-card">
-                    <div class="slider-row">
-                        <input type="range" id="synopticSlider" min="0" max="15" step="1" value="3">
+                <div class="controls-group">
+                    <div class="timeline-card">
+                        <div class="slider-row">
+                            <input type="range" id="synopticSlider" min="0" max="15" step="1" value="3">
+                        </div>
+                        <div class="controls-row">
+                            <button class="action-btn primary" id="synopticPlayBtn">▶ 播放</button>
+                            <span id="synopticLabel" style="font-weight:600; color:var(--primary);">Current (0H)</span>
+                            <button class="action-btn" onclick="adjustSynopticSpeed()">步進</button>
+                        </div>
                     </div>
-                    <div class="controls-row">
-                        <button class="action-btn primary" id="synopticPlayBtn">▶ 播放</button>
-                        <span id="synopticLabel" style="font-weight:600;">Current (0H)</span>
-                        <button class="action-btn" onclick="adjustSynopticSpeed()">加速</button>
+                    <div class="forecast-grid-container">
+                        <div class="forecast-label">選擇時次 (-18H 至 +72H)</div>
+                        <div class="forecast-grid" id="synopticGrid"></div>
                     </div>
-                </div>
-                <div class="forecast-grid-container">
-                    <div class="forecast-label">選擇時次 (-18H 至 +72H)</div>
-                    <div class="forecast-grid" id="synopticGrid" style="max-height: 130px;"></div>
                 </div>
             </div>
 
@@ -298,19 +453,21 @@
                 <div class="map-viewport">
                     <img id="windImg" src="" alt="Wind Forecast">
                 </div>
-                <div class="timeline-card">
-                    <div class="slider-row">
-                        <input type="range" id="windSlider" min="0" max="144" step="6" value="0">
+                <div class="controls-group">
+                    <div class="timeline-card">
+                        <div class="slider-row">
+                            <input type="range" id="windSlider" min="0" max="144" step="6" value="0">
+                        </div>
+                        <div class="controls-row">
+                            <button class="action-btn primary" id="windPlayBtn">▶ 播放</button>
+                            <span id="windLabel" style="font-weight:600; color:var(--primary);">+000H</span>
+                            <button class="action-btn" onclick="adjustWindSpeed()">步進</button>
+                        </div>
                     </div>
-                    <div class="controls-row">
-                        <button class="action-btn primary" id="windPlayBtn">▶ 播放</button>
-                        <span id="windLabel" style="font-weight:600;">+000H</span>
-                        <button class="action-btn" onclick="adjustWindSpeed()">加速</button>
+                    <div class="forecast-grid-container">
+                        <div class="forecast-label">選擇預報時次 (小時)</div>
+                        <div class="forecast-grid" id="windGrid"></div>
                     </div>
-                </div>
-                <div class="forecast-grid-container">
-                    <div class="forecast-label">選擇預報時次 (小時)</div>
-                    <div class="forecast-grid" id="windGrid"></div>
                 </div>
             </div>
 
@@ -319,25 +476,27 @@
                 <div class="map-viewport">
                     <img id="tempImg" src="" alt="Temperature Map">
                 </div>
-                <div class="timeline-card">
-                    <div class="slider-row">
-                        <input type="range" id="tempSlider" min="0" max="144" step="6" value="0">
+                <div class="controls-group">
+                    <div class="timeline-card">
+                        <div class="slider-row">
+                            <input type="range" id="tempSlider" min="0" max="144" step="6" value="0">
+                        </div>
+                        <div class="controls-row">
+                            <button class="action-btn primary" id="tempPlayBtn">▶ 播放</button>
+                            <span id="tempLabel" style="font-weight:600; color:var(--primary);">+000H</span>
+                            <button class="action-btn" onclick="adjustTempSpeed()">步進</button>
+                        </div>
                     </div>
-                    <div class="controls-row">
-                        <button class="action-btn primary" id="tempPlayBtn">▶ 播放</button>
-                        <span id="tempLabel" style="font-weight:600;">+000H</span>
-                        <button class="action-btn" onclick="adjustTempSpeed()">加速</button>
+                    <div class="forecast-grid-container">
+                        <div class="forecast-label">選擇預報時次 (小時)</div>
+                        <div class="forecast-grid" id="tempGrid"></div>
                     </div>
-                </div>
-                <div class="forecast-grid-container">
-                    <div class="forecast-label">選擇預報時次 (小時)</div>
-                    <div class="forecast-grid" id="tempGrid"></div>
                 </div>
             </div>
 
             <!-- View 4: Delta P 972 -->
-            <div id="sec-deltap" class="view-section">
-                <div id="deltapAlert" class="alert-box">正在加載即時氣壓數據...</div>
+            <div id="sec-deltap" class="view-section full-width-panel" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto; width: 100%;">
+                <div id="deltapAlert" class="alert-box">正在加載即時氣壓 telemetry 數據...</div>
                 <div class="deltap-grid">
                     <div class="metric-card">
                         <div class="metric-title">當前 Δp(972)</div>
@@ -345,7 +504,7 @@
                     </div>
                     <div class="metric-card">
                         <div class="metric-title">預估到達時間</div>
-                        <div class="metric-val" id="dpArrival" style="font-size: 0.9rem; margin-top: 6px;">--</div>
+                        <div class="metric-val" id="dpArrival" style="font-size: 1.1rem; margin-top: 10px;">--</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-title">6小時氣壓差變化</div>
@@ -353,38 +512,40 @@
                     </div>
                     <div class="metric-card">
                         <div class="metric-title">站壓 (郴州 / 香港)</div>
-                        <div class="metric-val" id="dpStations" style="font-size: 0.85rem; margin-top: 6px;">-- / --</div>
+                        <div class="metric-val" id="dpStations" style="font-size: 1rem; margin-top: 10px;">-- / --</div>
                     </div>
                 </div>
                 <div class="info-card">
-                    <strong>Δp(972) 說明：</strong><br>
+                    <strong>Δp(972) 深度分析說明：</strong><br>
                     指郴州（57972）與香港之氣壓差，預測每年秋冬季北風潮抵達時間及強度。<br>
                     <table class="mini-table">
                         <tr><th>Δp(972)</th><td>6</td><td>7</td><td>8</td><td>9</td></tr>
                         <tr><th>到達(時)</th><td>18</td><td>15</td><td>12</td><td>9</td></tr>
                     </table>
-                    • 6小時內上升大於2hPa或大於10hPa可能帶來強風。
+                    • 6小時內上升大於2hPa或大於10hPa可能帶來強風警報。
                 </div>
             </div>
 
-            <!-- View 5: Rain & Wind Forecast (0H - 360H) -->
+            <!-- View 5: Rain & Wind Forecast -->
             <div id="sec-rainwind" class="view-section">
                 <div class="map-viewport">
                     <img id="rainWindImg" src="" alt="Rain & Wind Forecast">
                 </div>
-                <div class="timeline-card">
-                    <div class="slider-row">
-                        <input type="range" id="rainWindSlider" min="0" max="360" step="6" value="0">
+                <div class="controls-group">
+                    <div class="timeline-card">
+                        <div class="slider-row">
+                            <input type="range" id="rainWindSlider" min="0" max="360" step="6" value="0">
+                        </div>
+                        <div class="controls-row">
+                            <button class="action-btn primary" id="rainWindPlayBtn">▶ 播放</button>
+                            <span id="rainWindLabel" style="font-weight:600; color:var(--primary);">+000H</span>
+                            <button class="action-btn" onclick="adjustRainWindSpeed()">步進</button>
+                        </div>
                     </div>
-                    <div class="controls-row">
-                        <button class="action-btn primary" id="rainWindPlayBtn">▶ 播放</button>
-                        <span id="rainWindLabel" style="font-weight:600;">+000H</span>
-                        <button class="action-btn" onclick="adjustRainWindSpeed()">加速</button>
+                    <div class="forecast-grid-container">
+                        <div class="forecast-label">選擇預報時次 (0H - 360H)</div>
+                        <div class="forecast-grid" id="rainWindGrid"></div>
                     </div>
-                </div>
-                <div class="forecast-grid-container">
-                    <div class="forecast-label">選擇預報時次 (0H - 360H)</div>
-                    <div class="forecast-grid" id="rainWindGrid" style="max-height: 130px;"></div>
                 </div>
             </div>
 
@@ -429,7 +590,7 @@
             }
         }
 
-        // --- Synoptic Logic (Extended up to A72) ---
+        // --- Synoptic Logic ---
         const synFrames = [
             { label: '-18H', file: 'weatherchart/B18map90146842.png' },
             { label: '-12H', file: 'weatherchart/B12map90146842.png' },
@@ -542,7 +703,7 @@
             updateTemp();
         }
 
-        // --- Rain & Wind Logic (0H - 360H) ---
+        // --- Rain & Wind Logic ---
         let rainWindIdx = 0, rainWindPlay = false, rainWindTimer = null;
         const rainWindImg = document.getElementById('rainWindImg');
         const rainWindSlider = document.getElementById('rainWindSlider');
@@ -570,7 +731,7 @@
         // --- Grid Builder ---
         function buildGrid(containerId, max, current, callback) {
             const grid = document.getElementById(containerId);
-            if (grid.children.length > 0) return; // Build only once
+            if (grid.children.length > 0) return;
             for (let s = 0; s <= max; s += 6) {
                 const chip = document.createElement('div');
                 chip.className = `fcst-chip ${s === current ? 'active' : ''}`;
@@ -609,13 +770,17 @@
                 const alertBox = document.getElementById('deltapAlert');
                 if (dp >= 10 || rise > 2) {
                     alertBox.innerHTML = "⚠️ 警告：氣壓梯度大，北風潮可能帶來強風！";
-                    alertBox.style.background = "#ffe3e3";
-                    alertBox.style.color = "#c0392b";
+                    alertBox.style.background = "rgba(239, 68, 68, 0.15)";
+                    alertBox.style.color = "#f87171";
+                    alertBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
                 } else {
                     alertBox.innerHTML = "✅ 目前 Δp(972) 氣壓差狀態平穩。";
+                    alertBox.style.background = "rgba(16, 185, 129, 0.15)";
+                    alertBox.style.color = "#34d399";
+                    alertBox.style.borderColor = "rgba(16, 185, 129, 0.4)";
                 }
             } catch (e) {
-                document.getElementById('deltapAlert').innerText = "❌ 無法獲取實時氣象數據。";
+                document.getElementById('deltapAlert').innerText = "❌ 無法獲取實時氣象 telemetry 數據。";
             }
         }
 
