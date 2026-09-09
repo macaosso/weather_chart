@@ -11,8 +11,10 @@ from scipy.ndimage import maximum_filter, minimum_filter
 
 matplotlib.use('Agg')
 
-# Ensure output directory exists
-output_dir = 'weatherchart'
+# Ensure output directory exists relative to the script's actual location
+output_dir = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 'weatherchart'
+)
 os.makedirs(output_dir, exist_ok=True)
 
 # 1. Setup a high-density grid matching the requested extent: (90, 146, 8, 42)
@@ -25,7 +27,6 @@ flat_lats = lat_mesh.flatten()
 lat_str = ','.join(map(str, flat_lats))
 lon_str = ','.join(map(str, flat_lons))
 
-# Increased forecast_days to 4 to safely cover up to +72H window
 url_grid = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=pressure_msl&past_days=2&forecast_days=4'
 
 res_grid = requests.get(url_grid).json()
@@ -57,7 +58,9 @@ offsets = {
     'A72': (72, 'A72map90146842.png'),
 }
 
-now_utc = datetime.datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+now_utc = datetime.datetime.utcnow().replace(
+    minute=0, second=0, microsecond=0
+)
 interp_lon, interp_lat = np.meshgrid(
     np.linspace(90, 146, 250), np.linspace(8, 42, 250)
 )
