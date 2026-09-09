@@ -1,4 +1,5 @@
 import datetime
+import os
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
@@ -9,6 +10,10 @@ from scipy.interpolate import griddata
 from scipy.ndimage import maximum_filter, minimum_filter
 
 matplotlib.use('Agg')
+
+# Ensure output directory exists
+output_dir = 'weatherchart'
+os.makedirs(output_dir, exist_ok=True)
 
 # 1. Setup a high-density grid matching the requested extent: (90, 146, 8, 42)
 lons_grid = np.arange(90, 148, 2.5)
@@ -196,6 +201,7 @@ for label, (offset_hrs, filename) in offsets.items():
   )
   plt.title(f'VALID: {valid_time_str}', fontsize=10, loc='right')
 
-  plt.savefig(filename, format='png', bbox_inches='tight', dpi=150)
+  filepath = os.path.join(output_dir, filename)
+  plt.savefig(filepath, format='png', bbox_inches='tight', dpi=150)
   plt.close(fig)
-  print(f'Successfully generated and saved: {filename} ({valid_time_str})')
+  print(f'Successfully generated and saved: {filepath} ({valid_time_str})')
