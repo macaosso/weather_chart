@@ -13,7 +13,7 @@ os.makedirs('rain_wind_maps', exist_ok=True)
 
 # Grid covering Southern China & surrounding seas (100°E to 123°E, 18°N to 32°N)
 lons_grid = np.arange(100, 124, 1.0)
-lats_grid = np.arange(18, 33, 1.0)
+lats_grid = np.arange(8, 33, 1.0)
 lon_mesh, lat_mesh = np.meshgrid(lons_grid, lats_grid)
 flat_lons = lon_mesh.flatten()
 flat_lats = lat_mesh.flatten()
@@ -30,22 +30,8 @@ if isinstance(res, dict):
   res = [res]
 
 interp_lon, interp_lat = np.meshgrid(
-    np.linspace(100, 123, 220), np.linspace(18, 32, 160)
+    np.linspace(100, 123, 220), np.linspace(8, 32, 160)
 )
-
-cities = {
-    '廣州': (113.2644, 23.1291),
-    '深圳': (114.0579, 22.5431),
-    '南寧': (108.3661, 22.8170),
-    '海口': (110.35, 20.02),
-    '長沙': (112.9388, 28.2282),
-    '南昌': (115.8921, 28.6765),
-    '福州': (119.2965, 26.0745),
-    '台北': (121.5654, 25.0330),
-    '澳門': (113.5491, 22.1987),
-    '香港': (114.1722, 22.2793),
-    
-}
 
 # Generate frames from 0H to 360H every 6 hours (61 total frames)
 for step in range(0, 145, 6):
@@ -72,7 +58,7 @@ for step in range(0, 145, 6):
 
   # Subgrid for wind vectors
   sub_lons = np.arange(101, 123, 1.5)
-  sub_lats = np.arange(19, 32, 1.5)
+  sub_lats = np.arange(9, 32, 1.5)
   sub_lon_mesh, sub_lat_mesh = np.meshgrid(sub_lons, sub_lats)
 
   sub_ws = griddata(
@@ -95,7 +81,7 @@ for step in range(0, 145, 6):
   fig, ax = plt.subplots(
       figsize=(12, 8), subplot_kw={'projection': ccrs.PlateCarree()}
   )
-  ax.set_extent([100, 123, 18, 32], crs=ccrs.PlateCarree())
+  ax.set_extent([100, 123, 8, 32], crs=ccrs.PlateCarree())
 
   ax.add_feature(cfeature.LAND, facecolor='#1e293b')
   ax.add_feature(cfeature.OCEAN, facecolor='#0f172a')
@@ -127,21 +113,6 @@ for step in range(0, 145, 6):
       alpha=0.9,
   )
 
-  for name, (clon, clat) in cities.items():
-    ax.plot(clon, clat, 'wo', markersize=4, transform=ccrs.PlateCarree())
-    ax.text(
-        clon + 0.2,
-        clat + 0.2,
-        name,
-        fontsize=9,
-        weight='bold',
-        color='white',
-        path_effects=[
-            matplotlib.patheffects.withStroke(linewidth=2, foreground='black')
-        ],
-        transform=ccrs.PlateCarree(),
-    )
-
   cbar = plt.colorbar(cf, ax=ax, orientation='vertical', pad=0.03, shrink=0.7)
   cbar.set_label('Precipitation (mm/6h)', color='white')
   cbar.ax.yaxis.set_tick_params(color='white')
@@ -150,7 +121,7 @@ for step in range(0, 145, 6):
   )
 
   ax.set_title(
-      '风·雨预报 (Wind & Rain Forecast)',
+      'Wind & Rain Forecast',
       fontsize=12,
       weight='bold',
       color='white',
