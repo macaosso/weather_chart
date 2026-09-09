@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main  # Change to 'master' if your default branch is master
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -38,6 +40,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git pull origin main --rebase || true
           git add rain_wind_maps/*.png
           git commit -m "Auto-update rain & wind maps: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || echo "No changes to commit"
-          git push
+          git push origin main
