@@ -11,7 +11,7 @@ from scipy.interpolate import griddata
 matplotlib.use('Agg')
 os.makedirs('rain_wind_maps', exist_ok=True)
 
-# Grid covering Southern China & surrounding seas (100°E to 123°E, 18°N to 32°N)
+# Grid covering Southern China & surrounding seas (100°E to 123°E, 8°N to 32°N)
 lons_grid = np.arange(100, 124, 1.0)
 lats_grid = np.arange(8, 33, 1.0)
 lon_mesh, lat_mesh = np.meshgrid(lons_grid, lats_grid)
@@ -21,7 +21,7 @@ flat_lats = lat_mesh.flatten()
 lat_str = ','.join(map(str, flat_lats))
 lon_str = ','.join(map(str, flat_lons))
 
-# 16 days forecast covers up to 384 hours (supports 360H)
+# 16 days forecast covers up to 384 hours (supports up to 360H)
 url = f'https://api.open-meteo.com/v1/forecast?latitude={lat_str}&longitude={lon_str}&hourly=precipitation,wind_speed_10m,wind_direction_10m&forecast_days=16'
 res = requests.get(url).json()
 if isinstance(res, dict):
@@ -33,7 +33,7 @@ interp_lon, interp_lat = np.meshgrid(
     np.linspace(100, 123, 220), np.linspace(8, 32, 160)
 )
 
-# Generate frames from 0H to 360H every 6 hours (61 total frames)
+# Generate frames from 0H to 144H every 6 hours (adjust upper range up to 361 for full 360h)
 for step in range(0, 145, 6):
   precips, wspeeds, wdirs = [], [], []
   for loc in res:
@@ -116,9 +116,7 @@ for step in range(0, 145, 6):
   cbar = plt.colorbar(cf, ax=ax, orientation='vertical', pad=0.03, shrink=0.7)
   cbar.set_label('Precipitation (mm/6h)', color='white')
   cbar.ax.yaxis.set_tick_params(color='white')
-  plt.setp(
-      plt.getp(cbar.ax.yaxis, 'ticklabels'), color='white'
-  )
+  plt.setp(cbar.ax.yaxis.get_ticklabels(), color='white')
 
   ax.set_title(
       'Wind & Rain Forecast',
