@@ -114,7 +114,7 @@
             height: 100%;
             object-fit: contain;
         }
-        /* Timeline Bar */
+        /* Timeline Card */
         .timeline-card {
             background: #f8fafc;
             border: 1px solid var(--border-color);
@@ -256,7 +256,7 @@
     <div class="mobile-container">
         <!-- Header -->
         <div class="app-header">
-            <div class="app-title" id="appHeaderTitle">Synoptic Weather Chart</div>
+            <div class="app-title" id="appHeaderTitle">地面天氣圖 (Synoptic)</div>
             <div class="app-subtitle">起報: 2026年09月08日00時</div>
         </div>
 
@@ -272,20 +272,24 @@
         <!-- Content Body -->
         <div class="content-body">
             
-            <!-- View 1: Synoptic Chart -->
+            <!-- View 1: Synoptic Chart (Extended to A72) -->
             <div id="sec-synoptic" class="view-section active">
                 <div class="map-viewport">
                     <img id="synopticImg" src="" alt="Synoptic Chart">
                 </div>
                 <div class="timeline-card">
                     <div class="slider-row">
-                        <input type="range" id="synopticSlider" min="0" max="7" step="1" value="3">
+                        <input type="range" id="synopticSlider" min="0" max="15" step="1" value="3">
                     </div>
                     <div class="controls-row">
                         <button class="action-btn primary" id="synopticPlayBtn">▶ 播放</button>
                         <span id="synopticLabel" style="font-weight:600;">Current (0H)</span>
                         <button class="action-btn" onclick="adjustSynopticSpeed()">加速</button>
                     </div>
+                </div>
+                <div class="forecast-grid-container">
+                    <div class="forecast-label">選擇時次 (-18H 至 +72H)</div>
+                    <div class="forecast-grid" id="synopticGrid" style="max-height: 130px;"></div>
                 </div>
             </div>
 
@@ -397,6 +401,7 @@
                 document.querySelector('[onclick*="synoptic"]').classList.add('active');
                 document.getElementById('sec-synoptic').classList.add('active');
                 document.getElementById('appHeaderTitle').innerText = '地面天氣圖 (Synoptic)';
+                buildSynopticGrid();
                 updateSynoptic();
             } else if (tabName === 'wind') {
                 document.querySelector('[onclick*="wind"]').classList.add('active');
@@ -424,7 +429,7 @@
             }
         }
 
-        // --- Synoptic Logic ---
+        // --- Synoptic Logic (Extended up to A72) ---
         const synFrames = [
             { label: '-18H', file: 'B18map90146842.png' },
             { label: '-12H', file: 'B12map90146842.png' },
@@ -433,7 +438,15 @@
             { label: '+6H',  file: 'A6map90146842.png' },
             { label: '+12H', file: 'A12map90146842.png' },
             { label: '+18H', file: 'A18map90146842.png' },
-            { label: '+24H', file: 'A24map90146842.png' }
+            { label: '+24H', file: 'A24map90146842.png' },
+            { label: '+30H', file: 'A30map90146842.png' },
+            { label: '+36H', file: 'A36map90146842.png' },
+            { label: '+42H', file: 'A42map90146842.png' },
+            { label: '+48H', file: 'A48map90146842.png' },
+            { label: '+54H', file: 'A54map90146842.png' },
+            { label: '+60H', file: 'A60map90146842.png' },
+            { label: '+66H', file: 'A66map90146842.png' },
+            { label: '+72H', file: 'A72map90146842.png' }
         ];
         let synIdx = 3, synPlay = false, synTimer = null;
         const synImg = document.getElementById('synopticImg');
@@ -444,6 +457,7 @@
             synImg.src = synFrames[synIdx].file;
             synSlider.value = synIdx;
             synLbl.innerText = synFrames[synIdx].label;
+            updateSynopticGridActive();
         }
         synSlider.oninput = (e) => { synIdx = parseInt(e.target.value); updateSynoptic(); };
         document.getElementById('synopticPlayBtn').onclick = () => {
@@ -456,6 +470,26 @@
         function adjustSynopticSpeed() {
             synIdx = (synIdx + 1) % synFrames.length;
             updateSynoptic();
+        }
+
+        function buildSynopticGrid() {
+            const grid = document.getElementById('synopticGrid');
+            if (grid.children.length > 0) return;
+            synFrames.forEach((frame, idx) => {
+                const chip = document.createElement('div');
+                chip.className = `fcst-chip ${idx === synIdx ? 'active' : ''}`;
+                chip.innerText = frame.label.replace('H', '');
+                chip.onclick = () => { synIdx = idx; updateSynoptic(); };
+                grid.appendChild(chip);
+            });
+        }
+        function updateSynopticGridActive() {
+            const grid = document.getElementById('synopticGrid');
+            if (!grid || grid.children.length === 0) return;
+            Array.from(grid.children).forEach((chip, idx) => {
+                if (idx === synIdx) chip.classList.add('active');
+                else chip.classList.remove('active');
+            });
         }
 
         // --- Wind Logic ---
@@ -586,6 +620,7 @@
         }
 
         // Init Default View
+        buildSynopticGrid();
         updateSynoptic();
     </script>
 </body>
