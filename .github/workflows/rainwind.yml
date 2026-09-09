@@ -34,7 +34,7 @@ jobs:
           pip install matplotlib cartopy numpy requests scipy
 
       - name: Run rain and wind script
-        run: python rain_wind.py
+        run: python rain_wind_map.py
 
       - name: Commit and push updated maps
         run: |
