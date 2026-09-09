@@ -197,7 +197,7 @@ for label, (offset_hrs, filename) in offsets.items():
 
   valid_time_str = target_time.strftime('%Y-%m-%d %H:00 UTC')
   plt.title(
-      'Regional Synoptic Weather Chart (Open-Meteo)',
+      'Synoptic Weather Chart (MSSO)',
       fontsize=11,
       weight='bold',
       loc='left',
