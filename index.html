@@ -55,7 +55,7 @@
         }
 
         .app-header {
-            padding: 20px 24px;
+            padding: 16px 24px;
             background: linear-gradient(90deg, rgba(13, 20, 35, 0.95) 0%, rgba(20, 35, 60, 0.95) 100%);
             border-bottom: 1px solid var(--panel-border);
             display: flex;
@@ -72,7 +72,7 @@
         }
 
         .app-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 800;
             color: var(--text-main);
             letter-spacing: 0.5px;
@@ -92,8 +92,108 @@
         }
 
         .app-subtitle {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* Tech-style Persistent Live Weather Panel */
+        .tech-live-panel {
+            margin: 16px 20px 0 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.05), inset 0 1px 0 rgba(0, 242, 254, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-live-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .tech-live-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 8px;
+        }
+
+        .tech-live-title {
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tech-live-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            align-items: center;
+        }
+
+        .tech-main-display {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            grid-column: span 2;
+        }
+
+        .tech-weather-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        .tech-temp-box h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: var(--text-main);
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .tech-temp-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .tech-metric-cell {
+            background: rgba(5, 11, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .tech-metric-cell .label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .tech-metric-cell .val {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
             font-family: var(--font-mono);
         }
 
@@ -101,20 +201,21 @@
             display: flex;
             overflow-x: auto;
             background: rgba(8, 14, 26, 0.8);
-            padding: 10px 16px;
+            padding: 12px 20px 10px 20px;
             gap: 8px;
             border-bottom: 1px solid var(--panel-border);
+            margin-top: 16px;
         }
 
         .tab-btn {
             flex: 0 0 auto;
-            padding: 10px 18px;
-            font-size: 0.85rem;
+            padding: 8px 16px;
+            font-size: 0.8rem;
             font-weight: 600;
             border: 1px solid rgba(255, 255, 255, 0.08);
             background: rgba(255, 255, 255, 0.02);
             color: var(--text-muted);
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -303,90 +404,6 @@
             box-shadow: 0 0 10px var(--primary-glow);
         }
 
-        /* Real-time Weather Card Style matching UI */
-        .live-weather-card {
-            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-            border-radius: 16px;
-            padding: 24px;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .live-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .live-title-group h3 {
-            margin: 0 0 4px 0;
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .live-date {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            font-family: var(--font-mono);
-        }
-
-        .live-metrics-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-            gap: 12px;
-            align-items: center;
-        }
-
-        .live-main-temp {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            grid-column: span 2;
-        }
-
-        .live-main-temp img {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
-        }
-
-        .temp-nums h1 {
-            margin: 0;
-            font-size: 2.5rem;
-            font-weight: 800;
-        }
-
-        .temp-nums .sub-range {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-
-        .metric-badge {
-            background: rgba(0, 0, 0, 0.15);
-            padding: 10px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 4px;
-        }
-
-        .metric-badge span.label {
-            font-size: 0.75rem;
-            opacity: 0.8;
-        }
-
-        .metric-badge span.val {
-            font-size: 0.95rem;
-            font-weight: 700;
-        }
-
         .deltap-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -480,18 +497,58 @@
         <!-- Header -->
         <div class="app-header">
             <div class="header-left">
-                <div class="app-title" id="appHeaderTitle">實時天氣</div>
+                <div class="app-title" id="appHeaderTitle">QUANTUM METEO DASHBOARD</div>
                 <div class="app-subtitle">SYS_INIT: 2026-09-14 // QUANTUM_METEO_CORE</div>
             </div>
             <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary);">
-                ● SYSTEM ONLINE
+                ● TELEMETRY ONLINE
+            </div>
+        </div>
+
+        <!-- Persistent Tech-Style Live Weather Panel at Top -->
+        <div class="tech-live-panel">
+            <div class="tech-live-header">
+                <div class="tech-live-title">
+                    <span>⚡ 實時天氣監測 (LIVE TELEMETRY)</span>
+                </div>
+                <div id="liveDateText" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+                    2026-09-14
+                </div>
+            </div>
+            <div class="tech-live-grid">
+                <div class="tech-main-display">
+                    <div class="tech-weather-icon" id="liveWeatherIcon">⛅</div>
+                    <div class="tech-temp-box">
+                        <h1 id="liveTemp">--°C</h1>
+                        <div class="tech-temp-sub" id="liveTempRange">-- - --°C / <span id="liveConditionDesc">連接中...</span></div>
+                    </div>
+                </div>
+                <div class="tech-metric-cell">
+                    <span class="label">相對濕度</span>
+                    <span class="val" id="liveHumidity">--%</span>
+                </div>
+                <div class="tech-metric-cell">
+                    <span class="label">風速</span>
+                    <span class="val" id="liveWindSpeed">-- km/h</span>
+                </div>
+                <div class="tech-metric-cell">
+                    <span class="label">風向</span>
+                    <span class="val" id="liveWindDir">--</span>
+                </div>
+                <div class="tech-metric-cell">
+                    <span class="label">紫外線指數</span>
+                    <span class="val" id="liveUv">--</span>
+                </div>
+                <div class="tech-metric-cell">
+                    <span class="label">體感溫度</span>
+                    <span class="val" id="liveApparent">--</span>
+                </div>
             </div>
         </div>
 
         <!-- Tab Bar -->
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('current')">實時天氣</button>
-            <button class="tab-btn" onclick="switchTab('synoptic')">地面天氣圖</button>
+            <button class="tab-btn active" onclick="switchTab('synoptic')">地面天氣圖</button>
             <button class="tab-btn" onclick="switchTab('wind')">ECMWF 風場</button>
             <button class="tab-btn" onclick="switchTab('temp')">2m 氣溫</button>
             <button class="tab-btn" onclick="switchTab('deltap')">Δp(972) 北風潮</button>
@@ -501,50 +558,8 @@
         <!-- Content Body -->
         <div class="content-body">
             
-            <!-- View 0: Current Weather (Open-Meteo Integrated) -->
-            <div id="sec-current" class="view-section active full-width-panel">
-                <div class="live-weather-card">
-                    <div class="live-header">
-                        <div class="live-title-group">
-                            <h3>實時天氣</h3>
-                            <div class="live-date" id="liveDateText">2026年9月14日 星期一</div>
-                        </div>
-                        <button class="action-btn" onclick="fetchLiveWeather()" style="background:rgba(255,255,255,0.2); border:none; color:#fff;">刷新數據</button>
-                    </div>
-                    <div class="live-metrics-row">
-                        <div class="live-main-temp">
-                            <img id="liveWeatherIcon" src="icons/s.png" alt="Weather Icon">
-                            <div class="temp-nums">
-                                <h1 id="liveTemp">--°C</h1>
-                                <div class="sub-range" id="liveTempRange">-- - --°C / <span id="liveConditionDesc">載入中...</span></div>
-                            </div>
-                        </div>
-                        <div class="metric-badge">
-                            <span class="label">濕度</span>
-                            <span class="val" id="liveHumidity">--%</span>
-                        </div>
-                        <div class="metric-badge">
-                            <span class="label">風速</span>
-                            <span class="val" id="liveWindSpeed">-- km/h</span>
-                        </div>
-                        <div class="metric-badge">
-                            <span class="label">風向</span>
-                            <span class="val" id="liveWindDir">--</span>
-                        </div>
-                        <div class="metric-badge">
-                            <span class="label">紫外線</span>
-                            <span class="val" id="liveUv">--</span>
-                        </div>
-                        <div class="metric-badge">
-                            <span class="label">溫度體感</span>
-                            <span class="val" id="liveApparent">--</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- View 1: Synoptic Chart -->
-            <div id="sec-synoptic" class="view-section">
+            <div id="sec-synoptic" class="view-section active">
                 <div class="map-viewport">
                     <img id="synopticImg" src="" alt="Synoptic Chart">
                 </div>
@@ -671,18 +686,18 @@
     </div>
 
     <script>
-        // --- Open-Meteo Icon Utility ---
-        function getOpenMeteoIcon(code, hour = 12) {
+        // --- Tech Weather Symbol Utility (Replaces missing PNGs to fix 404s) ---
+        function getWeatherSymbol(code, hour = 12) {
             const isNight = (hour < 6 || hour >= 18);
-            if (code === 0) return isNight ? "icons/NightS.png" : "icons/s.png";
-            if (code === 1 || code === 2) return isNight ? "icons/NightSC.png" : "icons/sc.png";
-            if (code === 3) return "icons/c.png";
-            if (code === 45 || code === 48) return "icons/f.png";
-            if (code >= 51 && code <= 67) return "icons/r.png";
-            if (code >= 71 && code <= 77) return "icons/s_snow.png";
-            if (code >= 80 && code <= 82) return "icons/hr.png";
-            if (code >= 95 && code <= 99) return "icons/t.png";
-            return "icons/s.png";
+            if (code === 0) return isNight ? "🌙" : "☀️";
+            if (code === 1 || code === 2) return isNight ? "🌤️" : "⛅";
+            if (code === 3) return "☁️";
+            if (code === 45 || code === 48) return "🌫️";
+            if (code >= 51 && code <= 67) return "🌧️";
+            if (code >= 71 && code <= 77) return "❄️";
+            if (code >= 80 && code <= 82) return "🌦️";
+            if (code >= 95 && code <= 99) return "⚡";
+            return "🌤️";
         }
 
         function getWeatherDescription(code) {
@@ -698,13 +713,12 @@
         function getWindDirectionText(degrees) {
             const directions = ["北", "東北", "東", "東南", "南", "西南", "西", "西北"];
             const val = Math.floor((degrees / 45) + 0.5);
-            return directions[(val % 8)] + "偏" + directions[(val % 8)];
+            return directions[(val % 8)] + "風";
         }
 
-        // --- Fetch Live Weather Data from Open-Meteo ---
+        // --- Fetch Live Weather Data from Open-Meteo with Null Safeguards ---
         async function fetchLiveWeather() {
             try {
-                // Coordinates for Hong Kong / Macao region default
                 const lat = 22.3, lon = 114.17;
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
                 
@@ -713,27 +727,35 @@
                 
                 const cur = data.current;
                 const daily = data.daily;
-                
                 const currentHour = new Date().getHours();
                 
-                document.getElementById('liveTemp').innerText = Math.round(cur.temperature_2m) + "°C";
-                document.getElementById('liveTempRange').innerText = `${Math.round(daily.temperature_2m_min[0])} - ${Math.round(daily.temperature_2m_max[0])}°C / `;
-                document.getElementById('liveConditionDesc').innerText = getWeatherDescription(cur.weather_code);
-                document.getElementById('liveWeatherIcon').src = getOpenMeteoIcon(cur.weather_code, currentHour);
+                const setElText = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = val;
+                };
+
+                setElText('liveTemp', Math.round(cur.temperature_2m) + "°C");
+                setElText('liveTempRange', `${Math.round(daily.temperature_2m_min[0])} - ${Math.round(daily.temperature_2m_max[0])}°C / `);
+                setElText('liveConditionDesc', getWeatherDescription(cur.weather_code));
+                setElText('liveHumidity', cur.relative_humidity_2m + "%");
+                setElText('liveWindSpeed', Math.round(cur.wind_speed_10m) + " km/h");
+                setElText('liveWindDir', getWindDirectionText(cur.wind_direction_10m));
+                setElText('liveUv', daily.uv_index_max[0] + " (低)");
                 
-                document.getElementById('liveHumidity').innerText = cur.relative_humidity_2m + "%";
-                document.getElementById('liveWindSpeed').innerText = Math.round(cur.wind_speed_10m) + " km/h";
-                document.getElementById('liveWindDir').innerText = getWindDirectionText(cur.wind_direction_10m);
-                document.getElementById('liveUv').innerText = daily.uv_index_max[0] + " 低";
-                
+                const iconEl = document.getElementById('liveWeatherIcon');
+                if (iconEl) iconEl.innerText = getWeatherSymbol(cur.weather_code, currentHour);
+
                 const apparent = cur.apparent_temperature;
                 let feelText = "舒適";
-                if (apparent > 30) feelText = "炎熱";
-                else if (apparent < 15) feelText = "寒冷";
-                document.getElementById('liveApparent').innerText = feelText;
+                if (apparent > 30) feelText = "偏熱";
+                else if (apparent < 15) feelText = "偏涼";
+                setElText('liveApparent', feelText);
+
+                const dateEl = document.getElementById('liveDateText');
+                if (dateEl) dateEl.innerText = new Date().toISOString().slice(0, 10) + " TELEMETRY ACTIVE";
 
             } catch (e) {
-                console.error("Failed to fetch live weather telemetry:", e);
+                console.warn("Live weather telemetry fallback mode active:", e);
             }
         }
 
@@ -742,33 +764,28 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
 
-            if (tabName === 'current') {
-                document.querySelector('[onclick*="current"]').classList.add('active');
-                document.getElementById('sec-current').classList.add('active');
-                document.getElementById('appHeaderTitle').innerText = '實時天氣';
-                fetchLiveWeather();
-            } else if (tabName === 'synoptic') {
+            if (tabName === 'synoptic') {
                 document.querySelector('[onclick*="synoptic"]').classList.add('active');
                 document.getElementById('sec-synoptic').classList.add('active');
-                document.getElementById('appHeaderTitle').innerText = '地面天氣圖 (Synoptic)';
+                document.getElementById('appHeaderTitle').innerText = '地面天氣圖 (SYNOPTIC)';
                 buildSynopticGrid();
                 updateSynoptic();
             } else if (tabName === 'wind') {
                 document.querySelector('[onclick*="wind"]').classList.add('active');
                 document.getElementById('sec-wind').classList.add('active');
-                document.getElementById('appHeaderTitle').innerText = 'ECMWF 10m 風場預報';
+                document.getElementById('appHeaderTitle').innerText = 'ECMWF 10M 風場預報';
                 buildGrid('windGrid', 144, windIdx, (s) => { windIdx = s; updateWind(); });
                 updateWind();
             } else if (tabName === 'temp') {
                 document.querySelector('[onclick*="temp"]').classList.add('active');
                 document.getElementById('sec-temp').classList.add('active');
-                document.getElementById('appHeaderTitle').innerText = 'AIFS 2m 氣溫預報';
+                document.getElementById('appHeaderTitle').innerText = 'AIFS 2M 氣溫預報';
                 buildGrid('tempGrid', 144, tempIdx, (s) => { tempIdx = s; updateTemp(); });
                 updateTemp();
             } else if (tabName === 'deltap') {
                 document.querySelector('[onclick*="deltap"]').classList.add('active');
                 document.getElementById('sec-deltap').classList.add('active');
-                document.getElementById('appHeaderTitle').innerText = 'Δp(972) 北風潮分析';
+                document.getElementById('appHeaderTitle').innerText = 'ΔP(972) 北風潮分析';
                 fetchDeltaP();
             } else if (tabName === 'rainwind') {
                 document.querySelector('[onclick*="rainwind"]').classList.add('active');
@@ -804,19 +821,22 @@
         const synLbl = document.getElementById('synopticLabel');
 
         function updateSynoptic() {
-            synImg.src = synFrames[synIdx].file;
-            synSlider.value = synIdx;
-            synLbl.innerText = synFrames[synIdx].label;
+            if (synImg) synImg.src = synFrames[synIdx].file;
+            if (synSlider) synSlider.value = synIdx;
+            if (synLbl) synLbl.innerText = synFrames[synIdx].label;
             updateSynopticGridActive();
         }
-        synSlider.oninput = (e) => { synIdx = parseInt(e.target.value); updateSynoptic(); };
-        document.getElementById('synopticPlayBtn').onclick = () => {
-            synPlay = !synPlay;
-            document.getElementById('synopticPlayBtn').innerText = synPlay ? '❚❚ 暫停' : '▶ 播放';
-            if (synPlay) {
-                synTimer = setInterval(() => { synIdx = (synIdx + 1) % synFrames.length; updateSynoptic(); }, 1000);
-            } else { clearInterval(synTimer); }
-        };
+        if (synSlider) synSlider.oninput = (e) => { synIdx = parseInt(e.target.value); updateSynoptic(); };
+        const synPlayBtn = document.getElementById('synopticPlayBtn');
+        if (synPlayBtn) {
+            synPlayBtn.onclick = () => {
+                synPlay = !synPlay;
+                synPlayBtn.innerText = synPlay ? '❚❚ 暫停' : '▶ 播放';
+                if (synPlay) {
+                    synTimer = setInterval(() => { synIdx = (synIdx + 1) % synFrames.length; updateSynoptic(); }, 1000);
+                } else { clearInterval(synTimer); }
+            };
+        }
         function adjustSynopticSpeed() {
             synIdx = (synIdx + 1) % synFrames.length;
             updateSynoptic();
@@ -824,7 +844,7 @@
 
         function buildSynopticGrid() {
             const grid = document.getElementById('synopticGrid');
-            if (grid.children.length > 0) return;
+            if (!grid || grid.children.length > 0) return;
             synFrames.forEach((frame, idx) => {
                 const chip = document.createElement('div');
                 chip.className = `fcst-chip ${idx === synIdx ? 'active' : ''}`;
@@ -849,19 +869,22 @@
         const windLbl = document.getElementById('windLabel');
 
         function updateWind() {
-            windImg.src = `ECwind/ECwind${windIdx}.png`;
-            windSlider.value = windIdx;
-            windLbl.innerText = `+${String(windIdx).padStart(3,'0')}H`;
+            if (windImg) windImg.src = `ECwind/ECwind${windIdx}.png`;
+            if (windSlider) windSlider.value = windIdx;
+            if (windLbl) windLbl.innerText = `+${String(windIdx).padStart(3,'0')}H`;
             updateGridActive('windGrid', windIdx);
         }
-        windSlider.oninput = (e) => { windIdx = parseInt(e.target.value); updateWind(); };
-        document.getElementById('windPlayBtn').onclick = () => {
-            windPlay = !windPlay;
-            document.getElementById('windPlayBtn').innerText = windPlay ? '❚❚ 暫停' : '▶ 播放';
-            if (windPlay) {
-                windTimer = setInterval(() => { windIdx = (windIdx + 6) > 144 ? 0 : windIdx + 6; updateWind(); }, 1000);
-            } else { clearInterval(windTimer); }
-        };
+        if (windSlider) windSlider.oninput = (e) => { windIdx = parseInt(e.target.value); updateWind(); };
+        const windPlayBtn = document.getElementById('windPlayBtn');
+        if (windPlayBtn) {
+            windPlayBtn.onclick = () => {
+                windPlay = !windPlay;
+                windPlayBtn.innerText = windPlay ? '❚❚ 暫停' : '▶ 播放';
+                if (windPlay) {
+                    windTimer = setInterval(() => { windIdx = (windIdx + 6) > 144 ? 0 : windIdx + 6; updateWind(); }, 1000);
+                } else { clearInterval(windTimer); }
+            };
+        }
         function adjustWindSpeed() {
             windIdx = (windIdx + 6) > 144 ? 0 : windIdx + 6;
             updateWind();
@@ -874,19 +897,22 @@
         const tempLbl = document.getElementById('tempLabel');
 
         function updateTemp() {
-            tempImg.src = `temp_maps/temp_${tempIdx}.png`;
-            tempSlider.value = tempIdx;
-            tempLbl.innerText = `+${String(tempIdx).padStart(3,'0')}H`;
+            if (tempImg) tempImg.src = `temp_maps/temp_${tempIdx}.png`;
+            if (tempSlider) tempSlider.value = tempIdx;
+            if (tempLbl) tempLbl.innerText = `+${String(tempIdx).padStart(3,'0')}H`;
             updateGridActive('tempGrid', tempIdx);
         }
-        tempSlider.oninput = (e) => { tempIdx = parseInt(e.target.value); updateTemp(); };
-        document.getElementById('tempPlayBtn').onclick = () => {
-            tempPlay = !tempPlay;
-            document.getElementById('tempPlayBtn').innerText = tempPlay ? '❚❚ 暫停' : '▶ 播放';
-            if (tempPlay) {
-                tempTimer = setInterval(() => { tempIdx = (tempIdx + 6) > 144 ? 0 : tempIdx + 6; updateTemp(); }, 1000);
-            } else { clearInterval(tempTimer); }
-        };
+        if (tempSlider) tempSlider.oninput = (e) => { tempIdx = parseInt(e.target.value); updateTemp(); };
+        const tempPlayBtn = document.getElementById('tempPlayBtn');
+        if (tempPlayBtn) {
+            tempPlayBtn.onclick = () => {
+                tempPlay = !tempPlay;
+                tempPlayBtn.innerText = tempPlay ? '❚❚ 暫停' : '▶ 播放';
+                if (tempPlay) {
+                    tempTimer = setInterval(() => { tempIdx = (tempIdx + 6) > 144 ? 0 : tempIdx + 6; updateTemp(); }, 1000);
+                } else { clearInterval(tempTimer); }
+            };
+        }
         function adjustTempSpeed() {
             tempIdx = (tempIdx + 6) > 144 ? 0 : tempIdx + 6;
             updateTemp();
@@ -899,19 +925,22 @@
         const rainWindLbl = document.getElementById('rainWindLabel');
 
         function updateRainWind() {
-            rainWindImg.src = `rain_wind_maps/rain_wind_${rainWindIdx}.png`;
-            rainWindSlider.value = rainWindIdx;
-            rainWindLbl.innerText = `+${String(rainWindIdx).padStart(3,'0')}H`;
+            if (rainWindImg) rainWindImg.src = `rain_wind_maps/rain_wind_${rainWindIdx}.png`;
+            if (rainWindSlider) rainWindSlider.value = rainWindIdx;
+            if (rainWindLbl) rainWindLbl.innerText = `+${String(rainWindIdx).padStart(3,'0')}H`;
             updateGridActive('rainWindGrid', rainWindIdx);
         }
-        rainWindSlider.oninput = (e) => { rainWindIdx = parseInt(e.target.value); updateRainWind(); };
-        document.getElementById('rainWindPlayBtn').onclick = () => {
-            rainWindPlay = !rainWindPlay;
-            document.getElementById('rainWindPlayBtn').innerText = rainWindPlay ? '❚❚ 暫停' : '▶ 播放';
-            if (rainWindPlay) {
-                rainWindTimer = setInterval(() => { rainWindIdx = (rainWindIdx + 6) > 360 ? 0 : rainWindIdx + 6; updateRainWind(); }, 1000);
-            } else { clearInterval(rainWindTimer); }
-        };
+        if (rainWindSlider) rainWindSlider.oninput = (e) => { rainWindIdx = parseInt(e.target.value); updateRainWind(); };
+        const rainWindPlayBtn = document.getElementById('rainWindPlayBtn');
+        if (rainWindPlayBtn) {
+            rainWindPlayBtn.onclick = () => {
+                rainWindPlay = !rainWindPlay;
+                rainWindPlayBtn.innerText = rainWindPlay ? '❚❚ 暫停' : '▶ 播放';
+                if (rainWindPlay) {
+                    rainWindTimer = setInterval(() => { rainWindIdx = (rainWindIdx + 6) > 360 ? 0 : rainWindIdx + 6; updateRainWind(); }, 1000);
+                } else { clearInterval(rainWindTimer); }
+            };
+        }
         function adjustRainWindSpeed() {
             rainWindIdx = (rainWindIdx + 6) > 360 ? 0 : rainWindIdx + 6;
             updateRainWind();
@@ -920,7 +949,7 @@
         // --- Grid Builder ---
         function buildGrid(containerId, max, current, callback) {
             const grid = document.getElementById(containerId);
-            if (grid.children.length > 0) return;
+            if (!grid || grid.children.length > 0) return;
             for (let s = 0; s <= max; s += 6) {
                 const chip = document.createElement('div');
                 chip.className = `fcst-chip ${s === current ? 'active' : ''}`;
@@ -951,29 +980,34 @@
                 let arrival = `${Math.max(2, Math.round(36 - 3 * dp))} 小時`;
                 if (dp < 4) arrival = "尚未明顯";
 
-                document.getElementById('dpVal').innerText = dp.toFixed(1) + " hPa";
-                document.getElementById('dpArrival').innerText = arrival;
-                document.getElementById('dpRise').innerText = (rise > 0 ? "+" : "") + rise.toFixed(1) + " hPa";
-                document.getElementById('dpStations').innerText = `${Math.round(cz.pressure_msl[idx])} / ${Math.round(hk.pressure_msl[idx])}`;
+                const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+                setEl('dpVal', dp.toFixed(1) + " hPa");
+                setEl('dpArrival', arrival);
+                setEl('dpRise', (rise > 0 ? "+" : "") + rise.toFixed(1) + " hPa");
+                setEl('dpStations', `${Math.round(cz.pressure_msl[idx])} / ${Math.round(hk.pressure_msl[idx])}`);
                 
                 const alertBox = document.getElementById('deltapAlert');
-                if (dp >= 10 || rise > 2) {
-                    alertBox.innerHTML = "⚠️ 警告：氣壓梯度大，北風潮可能帶來強風！";
-                    alertBox.style.background = "rgba(239, 68, 68, 0.15)";
-                    alertBox.style.color = "#f87171";
-                    alertBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
-                } else {
-                    alertBox.innerHTML = "✅ 目前 Δp(972) 氣壓差狀態平穩。";
-                    alertBox.style.background = "rgba(16, 185, 129, 0.15)";
-                    alertBox.style.color = "#34d399";
-                    alertBox.style.borderColor = "rgba(16, 185, 129, 0.4)";
+                if (alertBox) {
+                    if (dp >= 10 || rise > 2) {
+                        alertBox.innerHTML = "⚠️ 警告：氣壓梯度大，北風潮可能帶來強風！";
+                        alertBox.style.background = "rgba(239, 68, 68, 0.15)";
+                        alertBox.style.color = "#f87171";
+                        alertBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                    } else {
+                        alertBox.innerHTML = "✅ 目前 Δp(972) 氣壓差狀態平穩。";
+                        alertBox.style.background = "rgba(16, 185, 129, 0.15)";
+                        alertBox.style.color = "#34d399";
+                        alertBox.style.borderColor = "rgba(16, 185, 129, 0.4)";
+                    }
                 }
             } catch (e) {
-                document.getElementById('deltapAlert').innerText = "❌ 無法獲取實時氣象 telemetry 數據。";
+                const alertBox = document.getElementById('deltapAlert');
+                if (alertBox) alertBox.innerText = "❌ 無法獲取實時氣象 telemetry 數據。";
             }
         }
 
-        // Init Default View
+        // Initialize on Load
+        buildSynopticGrid();
         fetchLiveWeather();
     </script>
 </body>
