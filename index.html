@@ -40,7 +40,6 @@
             padding: 12px;
         }
 
-        /* Responsive Dashboard Container */
         .app-container {
             width: 100%;
             max-width: 1200px;
@@ -55,7 +54,6 @@
             overflow: hidden;
         }
 
-        /* Header */
         .app-header {
             padding: 20px 24px;
             background: linear-gradient(90deg, rgba(13, 20, 35, 0.95) 0%, rgba(20, 35, 60, 0.95) 100%);
@@ -99,7 +97,6 @@
             font-family: var(--font-mono);
         }
 
-        /* Navigation Tab Bar */
         .tab-bar {
             display: flex;
             overflow-x: auto;
@@ -135,7 +132,6 @@
             box-shadow: 0 0 15px var(--primary-glow);
         }
 
-        /* Content Body Layout */
         .content-body {
             padding: 20px;
             display: flex;
@@ -163,7 +159,6 @@
             }
         }
 
-        /* Map Viewport */
         .map-viewport {
             width: 100%;
             aspect-ratio: 4/3;
@@ -194,14 +189,12 @@
             object-fit: contain;
         }
 
-        /* Control Panel Group */
         .controls-group {
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
 
-        /* Timeline Card */
         .timeline-card {
             background: var(--card-bg);
             border: 1px solid var(--panel-border);
@@ -254,7 +247,6 @@
             box-shadow: 0 0 10px var(--primary-glow);
         }
 
-        /* Forecast Grid Selector */
         .forecast-grid-container {
             background: var(--card-bg);
             border: 1px solid var(--panel-border);
@@ -311,7 +303,90 @@
             box-shadow: 0 0 10px var(--primary-glow);
         }
 
-        /* Delta P Analytics Styles */
+        /* Real-time Weather Card Style matching UI */
+        .live-weather-card {
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            border-radius: 16px;
+            padding: 24px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .live-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .live-title-group h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .live-date {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            font-family: var(--font-mono);
+        }
+
+        .live-metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 12px;
+            align-items: center;
+        }
+
+        .live-main-temp {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            grid-column: span 2;
+        }
+
+        .live-main-temp img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+        }
+
+        .temp-nums h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+
+        .temp-nums .sub-range {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .metric-badge {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 10px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 4px;
+        }
+
+        .metric-badge span.label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .metric-badge span.val {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
         .deltap-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -405,8 +480,8 @@
         <!-- Header -->
         <div class="app-header">
             <div class="header-left">
-                <div class="app-title" id="appHeaderTitle">地面天氣圖 (Synoptic)</div>
-                <div class="app-subtitle">SYS_INIT: 2026-09-08_00Z // QUANTUM_METEO_CORE</div>
+                <div class="app-title" id="appHeaderTitle">實時天氣</div>
+                <div class="app-subtitle">SYS_INIT: 2026-09-14 // QUANTUM_METEO_CORE</div>
             </div>
             <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary);">
                 ● SYSTEM ONLINE
@@ -415,7 +490,8 @@
 
         <!-- Tab Bar -->
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('synoptic')">地面天氣圖</button>
+            <button class="tab-btn active" onclick="switchTab('current')">實時天氣</button>
+            <button class="tab-btn" onclick="switchTab('synoptic')">地面天氣圖</button>
             <button class="tab-btn" onclick="switchTab('wind')">ECMWF 風場</button>
             <button class="tab-btn" onclick="switchTab('temp')">2m 氣溫</button>
             <button class="tab-btn" onclick="switchTab('deltap')">Δp(972) 北風潮</button>
@@ -425,8 +501,50 @@
         <!-- Content Body -->
         <div class="content-body">
             
+            <!-- View 0: Current Weather (Open-Meteo Integrated) -->
+            <div id="sec-current" class="view-section active full-width-panel">
+                <div class="live-weather-card">
+                    <div class="live-header">
+                        <div class="live-title-group">
+                            <h3>實時天氣</h3>
+                            <div class="live-date" id="liveDateText">2026年9月14日 星期一</div>
+                        </div>
+                        <button class="action-btn" onclick="fetchLiveWeather()" style="background:rgba(255,255,255,0.2); border:none; color:#fff;">刷新數據</button>
+                    </div>
+                    <div class="live-metrics-row">
+                        <div class="live-main-temp">
+                            <img id="liveWeatherIcon" src="icons/s.png" alt="Weather Icon">
+                            <div class="temp-nums">
+                                <h1 id="liveTemp">--°C</h1>
+                                <div class="sub-range" id="liveTempRange">-- - --°C / <span id="liveConditionDesc">載入中...</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-badge">
+                            <span class="label">濕度</span>
+                            <span class="val" id="liveHumidity">--%</span>
+                        </div>
+                        <div class="metric-badge">
+                            <span class="label">風速</span>
+                            <span class="val" id="liveWindSpeed">-- km/h</span>
+                        </div>
+                        <div class="metric-badge">
+                            <span class="label">風向</span>
+                            <span class="val" id="liveWindDir">--</span>
+                        </div>
+                        <div class="metric-badge">
+                            <span class="label">紫外線</span>
+                            <span class="val" id="liveUv">--</span>
+                        </div>
+                        <div class="metric-badge">
+                            <span class="label">溫度體感</span>
+                            <span class="val" id="liveApparent">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- View 1: Synoptic Chart -->
-            <div id="sec-synoptic" class="view-section active">
+            <div id="sec-synoptic" class="view-section">
                 <div class="map-viewport">
                     <img id="synopticImg" src="" alt="Synoptic Chart">
                 </div>
@@ -553,12 +671,83 @@
     </div>
 
     <script>
+        // --- Open-Meteo Icon Utility ---
+        function getOpenMeteoIcon(code, hour = 12) {
+            const isNight = (hour < 6 || hour >= 18);
+            if (code === 0) return isNight ? "icons/NightS.png" : "icons/s.png";
+            if (code === 1 || code === 2) return isNight ? "icons/NightSC.png" : "icons/sc.png";
+            if (code === 3) return "icons/c.png";
+            if (code === 45 || code === 48) return "icons/f.png";
+            if (code >= 51 && code <= 67) return "icons/r.png";
+            if (code >= 71 && code <= 77) return "icons/s_snow.png";
+            if (code >= 80 && code <= 82) return "icons/hr.png";
+            if (code >= 95 && code <= 99) return "icons/t.png";
+            return "icons/s.png";
+        }
+
+        function getWeatherDescription(code) {
+            const map = {
+                0: "晴朗", 1: "大致天晴", 2: "部分多雲", 3: "多雲",
+                45: "有霧", 48: "霧淞", 51: "小雨", 53: "中雨",
+                55: "大雨", 61: "微雨", 63: "下雨", 65: "大雨",
+                80: "陣雨", 81: "強陣雨", 95: "雷暴"
+            };
+            return map[code] || "多雲";
+        }
+
+        function getWindDirectionText(degrees) {
+            const directions = ["北", "東北", "東", "東南", "南", "西南", "西", "西北"];
+            const val = Math.floor((degrees / 45) + 0.5);
+            return directions[(val % 8)] + "偏" + directions[(val % 8)];
+        }
+
+        // --- Fetch Live Weather Data from Open-Meteo ---
+        async function fetchLiveWeather() {
+            try {
+                // Coordinates for Hong Kong / Macao region default
+                const lat = 22.3, lon = 114.17;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
+                
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                const cur = data.current;
+                const daily = data.daily;
+                
+                const currentHour = new Date().getHours();
+                
+                document.getElementById('liveTemp').innerText = Math.round(cur.temperature_2m) + "°C";
+                document.getElementById('liveTempRange').innerText = `${Math.round(daily.temperature_2m_min[0])} - ${Math.round(daily.temperature_2m_max[0])}°C / `;
+                document.getElementById('liveConditionDesc').innerText = getWeatherDescription(cur.weather_code);
+                document.getElementById('liveWeatherIcon').src = getOpenMeteoIcon(cur.weather_code, currentHour);
+                
+                document.getElementById('liveHumidity').innerText = cur.relative_humidity_2m + "%";
+                document.getElementById('liveWindSpeed').innerText = Math.round(cur.wind_speed_10m) + " km/h";
+                document.getElementById('liveWindDir').innerText = getWindDirectionText(cur.wind_direction_10m);
+                document.getElementById('liveUv').innerText = daily.uv_index_max[0] + " 低";
+                
+                const apparent = cur.apparent_temperature;
+                let feelText = "舒適";
+                if (apparent > 30) feelText = "炎熱";
+                else if (apparent < 15) feelText = "寒冷";
+                document.getElementById('liveApparent').innerText = feelText;
+
+            } catch (e) {
+                console.error("Failed to fetch live weather telemetry:", e);
+            }
+        }
+
         // --- Navigation ---
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
 
-            if (tabName === 'synoptic') {
+            if (tabName === 'current') {
+                document.querySelector('[onclick*="current"]').classList.add('active');
+                document.getElementById('sec-current').classList.add('active');
+                document.getElementById('appHeaderTitle').innerText = '實時天氣';
+                fetchLiveWeather();
+            } else if (tabName === 'synoptic') {
                 document.querySelector('[onclick*="synoptic"]').classList.add('active');
                 document.getElementById('sec-synoptic').classList.add('active');
                 document.getElementById('appHeaderTitle').innerText = '地面天氣圖 (Synoptic)';
@@ -785,8 +974,7 @@
         }
 
         // Init Default View
-        buildSynopticGrid();
-        updateSynoptic();
+        fetchLiveWeather();
     </script>
 </body>
 </html>
