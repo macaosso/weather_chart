@@ -498,21 +498,21 @@
         <div class="app-header">
             <div class="header-left">
                 <div class="app-title" id="appHeaderTitle">QUANTUM METEO DASHBOARD</div>
-                <div class="app-subtitle">SYS_INIT: 2026-09-14 // QUANTUM_METEO_CORE</div>
+                <div class="app-subtitle">SYS_INIT: 2026-09-15 // SMG_XML_CORE</div>
             </div>
             <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary);">
-                ● TELEMETRY ONLINE
+                ● SMG TELEMETRY ONLINE
             </div>
         </div>
 
-        <!-- Persistent Tech-Style Live Weather Panel at Top -->
+        <!-- Persistent Tech-Style Live Weather Panel (SMG XML) -->
         <div class="tech-live-panel">
             <div class="tech-live-header">
                 <div class="tech-live-title">
-                    <span>⚡ 實時天氣監測 (LIVE TELEMETRY)</span>
+                    <span>⚡ 實時天氣監測 (SMG ACTUAL WEATHER)</span>
                 </div>
                 <div id="liveDateText" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
-                    2026-09-14
+                    2026-09-15
                 </div>
             </div>
             <div class="tech-live-grid">
@@ -520,7 +520,7 @@
                     <div class="tech-weather-icon" id="liveWeatherIcon">⛅</div>
                     <div class="tech-temp-box">
                         <h1 id="liveTemp">--°C</h1>
-                        <div class="tech-temp-sub" id="liveTempRange">-- - --°C / <span id="liveConditionDesc">連接中...</span></div>
+                        <div class="tech-temp-sub" id="liveTempRange">氣溫 / <span id="liveConditionDesc">連接中...</span></div>
                     </div>
                 </div>
                 <div class="tech-metric-cell">
@@ -540,8 +540,8 @@
                     <span class="val" id="liveUv">--</span>
                 </div>
                 <div class="tech-metric-cell">
-                    <span class="label">體感溫度</span>
-                    <span class="val" id="liveApparent">--</span>
+                    <span class="label">氣壓</span>
+                    <span class="val" id="livePressure">-- hPa</span>
                 </div>
             </div>
         </div>
@@ -686,76 +686,59 @@
     </div>
 
     <script>
-        // --- Tech Weather Symbol Utility (Replaces missing PNGs to fix 404s) ---
-        function getWeatherSymbol(code, hour = 12) {
-            const isNight = (hour < 6 || hour >= 18);
-            if (code === 0) return isNight ? "🌙" : "☀️";
-            if (code === 1 || code === 2) return isNight ? "🌤️" : "⛅";
-            if (code === 3) return "☁️";
-            if (code === 45 || code === 48) return "🌫️";
-            if (code >= 51 && code <= 67) return "🌧️";
-            if (code >= 71 && code <= 77) return "❄️";
-            if (code >= 80 && code <= 82) return "🌦️";
-            if (code >= 95 && code <= 99) return "⚡";
-            return "🌤️";
+        // --- Helper Utilities ---
+        function getSafeText(xmlDoc, selector) {
+            const el = xmlDoc.querySelector(selector);
+            return el ? el.textContent.trim() : null;
         }
 
-        function getWeatherDescription(code) {
-            const map = {
-                0: "晴朗", 1: "大致天晴", 2: "部分多雲", 3: "多雲",
-                45: "有霧", 48: "霧淞", 51: "小雨", 53: "中雨",
-                55: "大雨", 61: "微雨", 63: "下雨", 65: "大雨",
-                80: "陣雨", 81: "強陣雨", 95: "雷暴"
-            };
-            return map[code] || "多雲";
-        }
-
-        function getWindDirectionText(degrees) {
-            const directions = ["北", "東北", "東", "東南", "南", "西南", "西", "西北"];
-            const val = Math.floor((degrees / 45) + 0.5);
-            return directions[(val % 8)] + "風";
-        }
-
-        // --- Fetch Live Weather Data from Open-Meteo with Null Safeguards ---
+        // --- Fetch & Parse SMG XML Brief Data Locally ---
         async function fetchLiveWeather() {
             try {
-                const lat = 22.3, lon = 114.17;
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
-                
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                const cur = data.current;
-                const daily = data.daily;
-                const currentHour = new Date().getHours();
-                
+                // Fetches the local XML sync'd by GitHub Actions (bypassing CORS completely)
+                const res = await fetch('c_actual_brief.xml');
+                if (!res.ok) throw new Error('Failed to load local c_actual_brief.xml');
+                const str = await res.text();
+                const xmlDoc = new window.DOMParser().parseFromString(str, "text/xml");
+
                 const setElText = (id, val) => {
                     const el = document.getElementById(id);
                     if (el) el.innerText = val;
                 };
 
-                setElText('liveTemp', Math.round(cur.temperature_2m) + "°C");
-                setElText('liveTempRange', `${Math.round(daily.temperature_2m_min[0])} - ${Math.round(daily.temperature_2m_max[0])}°C / `);
-                setElText('liveConditionDesc', getWeatherDescription(cur.weather_code));
-                setElText('liveHumidity', cur.relative_humidity_2m + "%");
-                setElText('liveWindSpeed', Math.round(cur.wind_speed_10m) + " km/h");
-                setElText('liveWindDir', getWindDirectionText(cur.wind_direction_10m));
-                setElText('liveUv', daily.uv_index_max[0] + " (低)");
-                
-                const iconEl = document.getElementById('liveWeatherIcon');
-                if (iconEl) iconEl.innerText = getWeatherSymbol(cur.weather_code, currentHour);
+                // Extract values using robust tag queries adapted for SMG XML structure
+                const temp = getSafeText(xmlDoc, 'temperature') || getSafeText(xmlDoc, 'Temp') || '--';
+                const humidity = getSafeText(xmlDoc, 'humidity') || getSafeText(xmlDoc, 'Humidity') || '--';
+                const windSpeed = getSafeText(xmlDoc, 'wind_speed') || getSafeText(xmlDoc, 'WindSpeed') || '--';
+                const windDir = getSafeText(xmlDoc, 'wind_direction') || getSafeText(xmlDoc, 'WindDirection') || '--';
+                const uv = getSafeText(xmlDoc, 'uv') || getSafeText(xmlDoc, 'UV') || '--';
+                const pressure = getSafeText(xmlDoc, 'pressure') || getSafeText(xmlDoc, 'Pressure') || '--';
+                const condition = getSafeText(xmlDoc, 'weather_desc') || getSafeText(xmlDoc, 'Condition') || '實時天氣';
+                const updateTime = getSafeText(xmlDoc, 'time') || getSafeText(xmlDoc, 'Update') || '';
 
-                const apparent = cur.apparent_temperature;
-                let feelText = "舒適";
-                if (apparent > 30) feelText = "偏熱";
-                else if (apparent < 15) feelText = "偏涼";
-                setElText('liveApparent', feelText);
+                setElText('liveTemp', temp !== '--' ? temp + "°C" : '--°C');
+                setElText('liveConditionDesc', condition);
+                setElText('liveHumidity', humidity !== '--' ? humidity + "%" : '--%');
+                setElText('liveWindSpeed', windSpeed !== '--' ? windSpeed + " km/h" : '-- km/h');
+                setElText('liveWindDir', windDir);
+                setElText('liveUv', uv);
+                setElText('livePressure', pressure !== '--' ? pressure + " hPa" : '-- hPa');
+
+                const iconEl = document.getElementById('liveWeatherIcon');
+                if (iconEl) {
+                    if (condition.includes('雨')) iconEl.innerText = "🌧️";
+                    else if (condition.includes('雲')) iconEl.innerText = "☁️";
+                    else if (condition.includes('晴')) iconEl.innerText = "☀️";
+                    else iconEl.innerText = "⛅";
+                }
 
                 const dateEl = document.getElementById('liveDateText');
-                if (dateEl) dateEl.innerText = new Date().toISOString().slice(0, 10) + " TELEMETRY ACTIVE";
+                if (dateEl) dateEl.innerText = (updateTime ? updateTime + " " : "") + "SMG TELEMETRY ACTIVE";
 
             } catch (e) {
-                console.warn("Live weather telemetry fallback mode active:", e);
+                console.warn("SMG XML telemetry fallback mode active:", e);
+                const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+                setEl('liveConditionDesc', '等待同步 (Waiting Sync)');
             }
         }
 
@@ -1002,7 +985,7 @@
                 }
             } catch (e) {
                 const alertBox = document.getElementById('deltapAlert');
-                if (alertBox) alertBox.innerText = "❌ 無法獲取實時氣象 telemetry 數據。";
+                if (alertBox) alertBox.innerText = "❌ 無法獲取實時氣壓 telemetry 數據。";
             }
         }
 
