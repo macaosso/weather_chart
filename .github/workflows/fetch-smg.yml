@@ -1,0 +1,26 @@
+name: Fetch SMG Brief XML
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch:
+
+jobs:
+  update-xml:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download SMG Brief XML
+        run: |
+          curl -sL "https://xml.smg.gov.mo/c_actual_brief.xml" -o c_actual_brief.xml
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add c_actual_brief.xml
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update SMG brief XML" && git push)
