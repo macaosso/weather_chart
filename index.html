@@ -695,48 +695,51 @@
         // --- Fetch & Parse SMG XML Brief Data Locally ---
         async function fetchLiveWeather() {
             try {
-                // Fetches the local XML sync'd by GitHub Actions (bypassing CORS completely)
                 const res = await fetch('c_actual_brief.xml');
                 if (!res.ok) throw new Error('Failed to load local c_actual_brief.xml');
                 const str = await res.text();
                 const xmlDoc = new window.DOMParser().parseFromString(str, "text/xml");
-
+        
                 const setElText = (id, val) => {
                     const el = document.getElementById(id);
                     if (el) el.innerText = val;
                 };
-
-                // Extract values using robust tag queries adapted for SMG XML structure
-                const temp = getSafeText(xmlDoc, 'temperature') || getSafeText(xmlDoc, 'Temp') || '--';
-                const humidity = getSafeText(xmlDoc, 'humidity') || getSafeText(xmlDoc, 'Humidity') || '--';
-                const windSpeed = getSafeText(xmlDoc, 'wind_speed') || getSafeText(xmlDoc, 'WindSpeed') || '--';
-                const windDir = getSafeText(xmlDoc, 'wind_direction') || getSafeText(xmlDoc, 'WindDirection') || '--';
-                const uv = getSafeText(xmlDoc, 'uv') || getSafeText(xmlDoc, 'UV') || '--';
-                const pressure = getSafeText(xmlDoc, 'pressure') || getSafeText(xmlDoc, 'Pressure') || '--';
-                const condition = getSafeText(xmlDoc, 'weather_desc') || getSafeText(xmlDoc, 'Condition') || '實時天氣';
-                const updateTime = getSafeText(xmlDoc, 'time') || getSafeText(xmlDoc, 'Update') || '';
-
+        
+                // Extract using exact schema tags
+                const temp = getSafeText(xmlDoc, 'Temperature > Value') || '--';
+                const humidity = getSafeText(xmlDoc, 'Humidity > Value') || '--';
+                const windSpeed = getSafeText(xmlDoc, 'WindSpeed > Value') || '--';
+                const windSpeedDesc = getSafeText(xmlDoc, 'WindSpeed > WindSpeedDescription') || '';
+                const windDir = getSafeText(xmlDoc, 'WindDirection > WindDescription') || '--';
+                const feelsLikeDesc = getSafeText(xmlDoc, 'FeelsLikeDescription') || '實時天氣';
+                const iconUrl = getSafeText(xmlDoc, 'Icon > IconURL') || '';
+                const updateTime = getSafeText(xmlDoc, 'System > SysPubdate') || '';
+        
+                // Update UI elements
                 setElText('liveTemp', temp !== '--' ? temp + "°C" : '--°C');
-                setElText('liveConditionDesc', condition);
+                setElText('liveConditionDesc', feelsLikeDesc + (windSpeedDesc ? ` (${windSpeedDesc})` : ''));
                 setElText('liveHumidity', humidity !== '--' ? humidity + "%" : '--%');
                 setElText('liveWindSpeed', windSpeed !== '--' ? windSpeed + " km/h" : '-- km/h');
                 setElText('liveWindDir', windDir);
-                setElText('liveUv', uv);
-                setElText('livePressure', pressure !== '--' ? pressure + " hPa" : '-- hPa');
-
+                setElText('liveUv', '--'); // Not present in brief XML, handled gracefully
+                setElText('livePressure', '--');
+        
+                // Handle Weather Icon (If the icon element has an official URL, use it or fallback to emoji)
                 const iconEl = document.getElementById('liveWeatherIcon');
-                if (iconEl) {
-                    if (condition.includes('雨')) iconEl.innerText = "🌧️";
-                    else if (condition.includes('雲')) iconEl.innerText = "☁️";
-                    else if (condition.includes('晴')) iconEl.innerText = "☀️";
+                if (iconEl && iconUrl) {
+                    // Optional: Render SMG image icon directly or map to status emoji
+                    iconEl.innerHTML = `<img src="${iconUrl}" alt="weather icon" style="width: 48px; height: 48px; vertical-align: middle;">`;
+                } else if (iconEl) {
+                    if (feelsLikeDesc.includes('雨')) iconEl.innerText = "🌧️";
+                    else if (feelsLikeDesc.includes('酷熱') || temp >= 30) iconEl.innerText = "☀️";
                     else iconEl.innerText = "⛅";
                 }
-
+        
                 const dateEl = document.getElementById('liveDateText');
-                if (dateEl) dateEl.innerText = (updateTime ? updateTime + " " : "") + "SMG TELEMETRY ACTIVE";
-
+                if (dateEl) dateEl.innerText = updateTime ? updateTime + " (SMG)" : "SMG TELEMETRY ACTIVE";
+        
             } catch (e) {
-                console.warn("SMG XML telemetry fallback mode active:", e);
+                console.warn("SMG XML telemetry parsing error:", e);
                 const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
                 setEl('liveConditionDesc', '等待同步 (Waiting Sync)');
             }
