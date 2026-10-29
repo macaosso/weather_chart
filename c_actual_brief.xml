@@ -2,39 +2,39 @@
 <ActualWeatherBrief>
 <System>
 <SysAuthor>DINF</SysAuthor>
-<SysPubdate>2026-10-29 09:54</SysPubdate>
+<SysPubdate>2026-10-29 16:53</SysPubdate>
 <SysLanguage>0</SysLanguage>
 </System>
 <Custom>
-<ValidFor>2026-10-29 10:00</ValidFor>
+<ValidFor>2026-10-29 17:00</ValidFor>
 <Temperature>
 <MeasureUnit>°C</MeasureUnit>
 <Type>3</Type>
-<Value>27</Value>
+<Value>26</Value>
 </Temperature>
 <Humidity>
 <MeasureUnit>%</MeasureUnit>
 <Type>3</Type>
-<Value>70</Value>
+<Value>73</Value>
 </Humidity>
 <WindSpeed>
 <MeasureUnit>km/h</MeasureUnit>
 <Type>3</Type>
-<Value>10</Value>
+<Value>7</Value>
 <WindSpeedDescription>二級</WindSpeedDescription>
 </WindSpeed>
 <WindDirection>
 <MeasureUnit>°</MeasureUnit>
 <Type>3</Type>
-<Value>NE</Value>
-<WindDescription>東北</WindDescription>
+<Value>ESE</Value>
+<WindDescription>東南偏東</WindDescription>
 </WindDirection>
 <Icon>
-<IconName>ww-c03.png</IconName>
-<IconURL>https://cdn.dsmg.gov.mo/assets/icons/c03.png</IconURL>
-<IconDescription>多雲</IconDescription>
+<IconName>ww-c01.png</IconName>
+<IconURL>https://cdn.dsmg.gov.mo/assets/icons/c01.png</IconURL>
+<IconDescription>天晴</IconDescription>
 </Icon>
-<WeatherStatus>03</WeatherStatus>
+<WeatherStatus>01</WeatherStatus>
 <FeelsLikeLevel>7</FeelsLikeLevel>
 <FeelsLikeDescription>炎熱</FeelsLikeDescription>
 </Custom>
